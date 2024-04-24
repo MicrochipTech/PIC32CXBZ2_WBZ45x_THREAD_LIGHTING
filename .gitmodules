@@ -1,0 +1,3 @@
+[submodule "THREAD_GATEWAY"]
+	path = THREAD_GATEWAY
+	url = https://github.com/MicrochipTech/PIC32CXBZ2_WBZ45x_THREAD_GATEWAY
