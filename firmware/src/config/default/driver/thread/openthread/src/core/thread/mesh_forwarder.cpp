@@ -681,10 +681,7 @@ exit:
     return error;
 }
 
-bool MeshForwarder::GetRxOnWhenIdle(void) const
-{
-    return Get<Mac::Mac>().GetRxOnWhenIdle();
-}
+bool MeshForwarder::GetRxOnWhenIdle(void) const { return Get<Mac::Mac>().GetRxOnWhenIdle(); }
 
 void MeshForwarder::SetRxOnWhenIdle(bool aRxOnWhenIdle)
 {
@@ -833,8 +830,8 @@ exit:
 // It returns the next offset into the message after the prepared
 // frame.
 //
-uint16_t MeshForwarder::PrepareDataFrame(Mac::TxFrame &        aFrame,
-                                         Message &             aMessage,
+uint16_t MeshForwarder::PrepareDataFrame(Mac::TxFrame         &aFrame,
+                                         Message              &aMessage,
                                          const Mac::Addresses &aMacAddrs,
                                          bool                  aAddMeshHeader,
                                          uint16_t              aMeshSource,
@@ -968,9 +965,7 @@ start:
     // Initialize Mesh header
     if (aAddMeshHeader)
     {
-        Mle::MleRouter &   mle = Get<Mle::MleRouter>();
         Lowpan::MeshHeader meshHeader;
-        uint8_t            hopsLeft;
         uint16_t           maxPayloadLength;
 
         // Mesh Header frames are forwarded by routers over multiple
@@ -993,35 +988,7 @@ start:
 
         frameBuilder.Init(aFrame.GetPayload(), maxPayloadLength);
 
-        if (mle.IsChild())
-        {
-            // REED sets hopsLeft to max (16) + 1. It does not know the route cost.
-            hopsLeft = Mle::kMaxRouteCost + 1;
-        }
-        else
-        {
-            // Calculate the number of predicted hops.
-            hopsLeft = mle.GetRouteCost(aMeshDest);
-
-            if (hopsLeft != Mle::kMaxRouteCost)
-            {
-                hopsLeft += mle.GetLinkCost(Mle::RouterIdFromRloc16(mle.GetNextHop(aMeshDest)));
-            }
-            else
-            {
-                // In case there is no route to the destination router (only link).
-                hopsLeft = mle.GetLinkCost(Mle::RouterIdFromRloc16(aMeshDest));
-            }
-        }
-
-        // The hopsLft field MUST be incremented by one if the
-        // destination RLOC16 is not that of an active Router.
-        if (!Mle::IsActiveRouter(aMeshDest))
-        {
-            hopsLeft += 1;
-        }
-
-        meshHeader.Init(aMeshSource, aMeshDest, hopsLeft + Lowpan::MeshHeader::kAdditionalHopsLeft);
+        meshHeader.Init(aMeshSource, aMeshDest, kMeshHeaderHopsLeft);
 
         IgnoreError(meshHeader.AppendTo(frameBuilder));
     }
@@ -1135,7 +1102,7 @@ start:
     return nextOffset;
 }
 
-Neighbor *MeshForwarder::UpdateNeighborOnSentFrame(Mac::TxFrame &      aFrame,
+Neighbor *MeshForwarder::UpdateNeighborOnSentFrame(Mac::TxFrame       &aFrame,
                                                    Error               aError,
                                                    const Mac::Address &aMacDest,
                                                    bool                aIsDataPoll)
@@ -1230,7 +1197,7 @@ exit:
 
 void MeshForwarder::HandleSentFrame(Mac::TxFrame &aFrame, Error aError)
 {
-    Neighbor *   neighbor = nullptr;
+    Neighbor    *neighbor = nullptr;
     Mac::Address macDest;
 
     OT_ASSERT((aError == kErrorNone) || (aError == kErrorChannelAccessFailure) || (aError == kErrorAbort) ||
@@ -1449,13 +1416,13 @@ exit:
     }
 }
 
-void MeshForwarder::HandleFragment(FrameData &           aFrameData,
+void MeshForwarder::HandleFragment(FrameData            &aFrameData,
                                    const Mac::Addresses &aMacAddrs,
                                    const ThreadLinkInfo &aLinkInfo)
 {
     Error                  error = kErrorNone;
     Lowpan::FragmentHeader fragmentHeader;
-    Message *              message = nullptr;
+    Message               *message = nullptr;
 
     SuccessOrExit(error = fragmentHeader.ParseFrom(aFrameData));
 
@@ -1639,10 +1606,10 @@ bool MeshForwarder::UpdateReassemblyList(void)
     return mReassemblyList.GetHead() != nullptr;
 }
 
-Error MeshForwarder::FrameToMessage(const FrameData &     aFrameData,
+Error MeshForwarder::FrameToMessage(const FrameData      &aFrameData,
                                     uint16_t              aDatagramSize,
                                     const Mac::Addresses &aMacAddrs,
-                                    Message *&            aMessage)
+                                    Message             *&aMessage)
 {
     Error             error     = kErrorNone;
     FrameData         frameData = aFrameData;
@@ -1662,7 +1629,7 @@ exit:
     return error;
 }
 
-void MeshForwarder::HandleLowpanHC(const FrameData &     aFrameData,
+void MeshForwarder::HandleLowpanHC(const FrameData      &aFrameData,
                                    const Mac::Addresses &aMacAddrs,
                                    const ThreadLinkInfo &aLinkInfo)
 {
@@ -1712,9 +1679,9 @@ Error MeshForwarder::HandleDatagram(Message &aMessage, const ThreadLinkInfo &aLi
     return Get<Ip6::Ip6>().HandleDatagram(aMessage, Ip6::Ip6::kFromThreadNetif, &aLinkInfo);
 }
 
-Error MeshForwarder::GetFramePriority(const FrameData &     aFrameData,
+Error MeshForwarder::GetFramePriority(const FrameData      &aFrameData,
                                       const Mac::Addresses &aMacAddrs,
-                                      Message::Priority &   aPriority)
+                                      Message::Priority    &aPriority)
 {
     Error        error = kErrorNone;
     Ip6::Headers headers;
@@ -1925,13 +1892,11 @@ void MeshForwarder::LogIp6SourceDestAddresses(const Ip6::Headers &aHeaders, LogL
     }
 }
 #else
-void MeshForwarder::LogIp6SourceDestAddresses(const Ip6::Headers &, LogLevel)
-{
-}
+void MeshForwarder::LogIp6SourceDestAddresses(const Ip6::Headers &, LogLevel) {}
 #endif
 
 void MeshForwarder::LogIp6Message(MessageAction       aAction,
-                                  const Message &     aMessage,
+                                  const Message      &aMessage,
                                   const Mac::Address *aMacAddress,
                                   Error               aError,
                                   LogLevel            aLogLevel)
@@ -1939,7 +1904,7 @@ void MeshForwarder::LogIp6Message(MessageAction       aAction,
     Ip6::Headers headers;
     bool         shouldLogRss;
     bool         shouldLogRadio = false;
-    const char * radioString    = "";
+    const char  *radioString    = "";
 
     SuccessOrExit(headers.ParseFrom(aMessage));
 
@@ -1971,7 +1936,7 @@ exit:
 }
 
 void MeshForwarder::LogMessage(MessageAction       aAction,
-                               const Message &     aMessage,
+                               const Message      &aMessage,
                                Error               aError,
                                const Mac::Address *aMacAddress)
 
@@ -2038,7 +2003,7 @@ void MeshForwarder::LogFrame(const char *aActionText, const Mac::Frame &aFrame, 
 
 void MeshForwarder::LogFragmentFrameDrop(Error                         aError,
                                          uint16_t                      aFrameLength,
-                                         const Mac::Addresses &        aMacAddrs,
+                                         const Mac::Addresses         &aMacAddrs,
                                          const Lowpan::FragmentHeader &aFragmentHeader,
                                          bool                          aIsSecure)
 {
@@ -2060,21 +2025,15 @@ void MeshForwarder::LogLowpanHcFrameDrop(Error                 aError,
 
 #else // #if OT_SHOULD_LOG_AT( OT_LOG_LEVEL_NOTE)
 
-void MeshForwarder::LogMessage(MessageAction, const Message &, Error, const Mac::Address *)
-{
-}
+void MeshForwarder::LogMessage(MessageAction, const Message &, Error, const Mac::Address *) {}
 
-void MeshForwarder::LogFrame(const char *, const Mac::Frame &, Error)
-{
-}
+void MeshForwarder::LogFrame(const char *, const Mac::Frame &, Error) {}
 
 void MeshForwarder::LogFragmentFrameDrop(Error, uint16_t, const Mac::Addresses &, const Lowpan::FragmentHeader &, bool)
 {
 }
 
-void MeshForwarder::LogLowpanHcFrameDrop(Error, uint16_t, const Mac::Addresses &, bool)
-{
-}
+void MeshForwarder::LogLowpanHcFrameDrop(Error, uint16_t, const Mac::Addresses &, bool) {}
 
 #endif // #if OT_SHOULD_LOG_AT( OT_LOG_LEVEL_NOTE)
 

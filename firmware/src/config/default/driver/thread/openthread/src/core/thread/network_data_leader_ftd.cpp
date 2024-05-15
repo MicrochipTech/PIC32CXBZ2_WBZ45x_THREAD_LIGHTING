@@ -178,7 +178,7 @@ template <> void Leader::HandleTmf<kUriCommissionerSet>(Coap::Message &aMessage,
     bool                     hasSessionId = false;
     bool                     hasValidTlv  = false;
     uint16_t                 sessionId    = 0;
-    CommissioningDataTlv *   commDataTlv;
+    CommissioningDataTlv    *commDataTlv;
 
     MeshCoP::Tlv *cur;
     MeshCoP::Tlv *end;
@@ -284,14 +284,14 @@ exit:
     }
 }
 
-void Leader::SendCommissioningGetResponse(const Coap::Message &   aRequest,
+void Leader::SendCommissioningGetResponse(const Coap::Message    &aRequest,
                                           uint16_t                aLength,
                                           const Ip6::MessageInfo &aMessageInfo)
 {
     Error                 error = kErrorNone;
-    Coap::Message *       message;
+    Coap::Message        *message;
     CommissioningDataTlv *commDataTlv;
-    uint8_t *             data   = nullptr;
+    uint8_t              *data   = nullptr;
     uint8_t               length = 0;
 
     message = Get<Tmf::Agent>().NewPriorityResponseMessage(aRequest);
@@ -339,8 +339,8 @@ exit:
     FreeMessageOnError(message, error);
 }
 
-void Leader::SendCommissioningSetResponse(const Coap::Message &    aRequest,
-                                          const Ip6::MessageInfo & aMessageInfo,
+void Leader::SendCommissioningSetResponse(const Coap::Message     &aRequest,
+                                          const Ip6::MessageInfo  &aMessageInfo,
                                           MeshCoP::StateTlv::State aState)
 {
     Error          error = kErrorNone;
@@ -641,15 +641,9 @@ bool Leader::ContainsMatchingServer(const ServiceTlv *aService, const ServerTlv 
     return contains;
 }
 
-Leader::UpdateStatus Leader::UpdatePrefix(PrefixTlv &aPrefix)
-{
-    return UpdateTlv(aPrefix, aPrefix.GetSubTlvs());
-}
+Leader::UpdateStatus Leader::UpdatePrefix(PrefixTlv &aPrefix) { return UpdateTlv(aPrefix, aPrefix.GetSubTlvs()); }
 
-Leader::UpdateStatus Leader::UpdateService(ServiceTlv &aService)
-{
-    return UpdateTlv(aService, aService.GetSubTlvs());
-}
+Leader::UpdateStatus Leader::UpdateService(ServiceTlv &aService) { return UpdateTlv(aService, aService.GetSubTlvs()); }
 
 Leader::UpdateStatus Leader::UpdateTlv(NetworkDataTlv &aTlv, const NetworkDataTlv *aSubTlvs)
 {
@@ -712,11 +706,10 @@ void Leader::RegisterNetworkData(uint16_t aRloc16, const NetworkData &aNetworkDa
         }
     }
 
-    IncrementVersions(flags);
-
     DumpDebg("Register", GetBytes(), GetLength());
 
 exit:
+    IncrementVersions(flags);
 
     if (error != kErrorNone)
     {
@@ -772,7 +765,7 @@ exit:
 Error Leader::AddService(const ServiceTlv &aService, ChangedFlags &aChangedFlags)
 {
     Error            error = kErrorNone;
-    ServiceTlv *     dstService;
+    ServiceTlv      *dstService;
     ServiceData      serviceData;
     const ServerTlv *server;
 
@@ -815,7 +808,7 @@ exit:
 Error Leader::AddHasRoute(const HasRouteTlv &aHasRoute, PrefixTlv &aDstPrefix, ChangedFlags &aChangedFlags)
 {
     Error                error       = kErrorNone;
-    HasRouteTlv *        dstHasRoute = aDstPrefix.FindSubTlv<HasRouteTlv>(aHasRoute.IsStable());
+    HasRouteTlv         *dstHasRoute = aDstPrefix.FindSubTlv<HasRouteTlv>(aHasRoute.IsStable());
     const HasRouteEntry *entry       = aHasRoute.GetFirstEntry();
 
     if (dstHasRoute == nullptr)
@@ -852,8 +845,8 @@ exit:
 Error Leader::AddBorderRouter(const BorderRouterTlv &aBorderRouter, PrefixTlv &aDstPrefix, ChangedFlags &aChangedFlags)
 {
     Error                    error           = kErrorNone;
-    BorderRouterTlv *        dstBorderRouter = aDstPrefix.FindSubTlv<BorderRouterTlv>(aBorderRouter.IsStable());
-    ContextTlv *             dstContext      = aDstPrefix.FindSubTlv<ContextTlv>();
+    BorderRouterTlv         *dstBorderRouter = aDstPrefix.FindSubTlv<BorderRouterTlv>(aBorderRouter.IsStable());
+    ContextTlv              *dstContext      = aDstPrefix.FindSubTlv<ContextTlv>();
     uint8_t                  contextId       = 0;
     const BorderRouterEntry *entry           = aBorderRouter.GetFirstEntry();
 
@@ -1020,10 +1013,7 @@ void Leader::StartContextReuseTimer(uint8_t aContextId)
     mTimer.Start(kStateUpdatePeriod);
 }
 
-void Leader::StopContextReuseTimer(uint8_t aContextId)
-{
-    mContextLastUsed[aContextId - kMinContextId].SetValue(0);
-}
+void Leader::StopContextReuseTimer(uint8_t aContextId) { mContextLastUsed[aContextId - kMinContextId].SetValue(0); }
 
 void Leader::RemoveRloc(uint16_t aRloc16, MatchMode aMatchMode, ChangedFlags &aChangedFlags)
 {
@@ -1035,7 +1025,7 @@ void Leader::RemoveRloc(uint16_t aRloc16, MatchMode aMatchMode, ChangedFlags &aC
 void Leader::RemoveRloc(uint16_t           aRloc16,
                         MatchMode          aMatchMode,
                         const NetworkData &aExcludeNetworkData,
-                        ChangedFlags &     aChangedFlags)
+                        ChangedFlags      &aChangedFlags)
 {
     // Remove entries from Network Data matching `aRloc16` (using
     // `aMatchMode` to determine the match) but exclude any entries
@@ -1051,7 +1041,7 @@ void Leader::RemoveRloc(uint16_t           aRloc16,
         {
         case NetworkDataTlv::kTypePrefix:
         {
-            PrefixTlv *      prefix = As<PrefixTlv>(cur);
+            PrefixTlv       *prefix = As<PrefixTlv>(cur);
             const PrefixTlv *excludePrefix =
                 aExcludeNetworkData.FindPrefix(prefix->GetPrefix(), prefix->GetPrefixLength());
 
@@ -1068,7 +1058,7 @@ void Leader::RemoveRloc(uint16_t           aRloc16,
 
         case NetworkDataTlv::kTypeService:
         {
-            ServiceTlv *      service = As<ServiceTlv>(cur);
+            ServiceTlv       *service = As<ServiceTlv>(cur);
             ServiceData       serviceData;
             const ServiceTlv *excludeService;
 
@@ -1096,17 +1086,17 @@ void Leader::RemoveRloc(uint16_t           aRloc16,
     }
 }
 
-void Leader::RemoveRlocInPrefix(PrefixTlv &      aPrefix,
+void Leader::RemoveRlocInPrefix(PrefixTlv       &aPrefix,
                                 uint16_t         aRloc16,
                                 MatchMode        aMatchMode,
                                 const PrefixTlv *aExcludePrefix,
-                                ChangedFlags &   aChangedFlags)
+                                ChangedFlags    &aChangedFlags)
 {
     // Remove entries in `aPrefix` TLV matching the given `aRloc16`
     // excluding any entries that are present in `aExcludePrefix`.
 
     NetworkDataTlv *cur = aPrefix.GetSubTlvs();
-    ContextTlv *    context;
+    ContextTlv     *context;
 
     while (cur < aPrefix.GetNext())
     {
@@ -1159,17 +1149,17 @@ void Leader::RemoveRlocInPrefix(PrefixTlv &      aPrefix,
     }
 }
 
-void Leader::RemoveRlocInService(ServiceTlv &      aService,
+void Leader::RemoveRlocInService(ServiceTlv       &aService,
                                  uint16_t          aRloc16,
                                  MatchMode         aMatchMode,
                                  const ServiceTlv *aExcludeService,
-                                 ChangedFlags &    aChangedFlags)
+                                 ChangedFlags     &aChangedFlags)
 {
     // Remove entries in `aService` TLV matching the given `aRloc16`
     // excluding any entries that are present in `aExcludeService`.
 
     NetworkDataTlv *start = aService.GetSubTlvs();
-    ServerTlv *     server;
+    ServerTlv      *server;
 
     while ((server = NetworkDataTlv::Find<ServerTlv>(start, aService.GetNext())) != nullptr)
     {
@@ -1187,12 +1177,12 @@ void Leader::RemoveRlocInService(ServiceTlv &      aService,
     }
 }
 
-void Leader::RemoveRlocInHasRoute(PrefixTlv &      aPrefix,
-                                  HasRouteTlv &    aHasRoute,
+void Leader::RemoveRlocInHasRoute(PrefixTlv       &aPrefix,
+                                  HasRouteTlv     &aHasRoute,
                                   uint16_t         aRloc16,
                                   MatchMode        aMatchMode,
                                   const PrefixTlv *aExcludePrefix,
-                                  ChangedFlags &   aChangedFlags)
+                                  ChangedFlags    &aChangedFlags)
 {
     // Remove entries in `aHasRoute` (a sub-TLV of `aPrefix` TLV)
     // matching the given `aRloc16` excluding entries that are present
@@ -1216,12 +1206,12 @@ void Leader::RemoveRlocInHasRoute(PrefixTlv &      aPrefix,
     }
 }
 
-void Leader::RemoveRlocInBorderRouter(PrefixTlv &      aPrefix,
+void Leader::RemoveRlocInBorderRouter(PrefixTlv       &aPrefix,
                                       BorderRouterTlv &aBorderRouter,
                                       uint16_t         aRloc16,
                                       MatchMode        aMatchMode,
                                       const PrefixTlv *aExcludePrefix,
-                                      ChangedFlags &   aChangedFlags)
+                                      ChangedFlags    &aChangedFlags)
 {
     // Remove entries in `aBorderRouter` (a sub-TLV of `aPrefix` TLV)
     // matching the given `aRloc16` excluding entries that are present
@@ -1248,7 +1238,7 @@ void Leader::RemoveRlocInBorderRouter(PrefixTlv &      aPrefix,
 void Leader::RemoveContext(uint8_t aContextId)
 {
     NetworkDataTlv *start = GetTlvsStart();
-    PrefixTlv *     prefix;
+    PrefixTlv      *prefix;
 
     while ((prefix = NetworkDataTlv::Find<PrefixTlv>(start, GetTlvsEnd())) != nullptr)
     {
@@ -1267,7 +1257,7 @@ void Leader::RemoveContext(uint8_t aContextId)
 void Leader::RemoveContext(PrefixTlv &aPrefix, uint8_t aContextId)
 {
     NetworkDataTlv *start = aPrefix.GetSubTlvs();
-    ContextTlv *    context;
+    ContextTlv     *context;
 
     while ((context = NetworkDataTlv::Find<ContextTlv>(start, aPrefix.GetNext())) != nullptr)
     {
@@ -1350,29 +1340,6 @@ void Leader::HandleTimer(void)
 
 exit:
     return;
-}
-
-Error Leader::RemoveStaleChildEntries(Coap::ResponseHandler aHandler, void *aContext)
-{
-    Error    error    = kErrorNotFound;
-    Iterator iterator = kIteratorInit;
-    uint16_t rloc16;
-
-    VerifyOrExit(Get<Mle::MleRouter>().IsRouterOrLeader());
-
-    while (GetNextServer(iterator, rloc16) == kErrorNone)
-    {
-        if (!Mle::IsActiveRouter(rloc16) && Mle::RouterIdMatch(Get<Mle::MleRouter>().GetRloc16(), rloc16) &&
-            Get<ChildTable>().FindChild(rloc16, Child::kInStateValid) == nullptr)
-        {
-            // In Thread 1.1 Specification 5.15.6.1, only one RLOC16 TLV entry may appear in SRV_DATA.ntf.
-            error = SendServerDataNotification(rloc16, /* aAppendNetDataTlv */ false, aHandler, aContext);
-            ExitNow();
-        }
-    }
-
-exit:
-    return error;
 }
 
 #if OPENTHREAD_FTD && OPENTHREAD_CONFIG_BORDER_ROUTING_ENABLE

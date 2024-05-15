@@ -61,30 +61,6 @@
 // *****************************************************************************
 // *****************************************************************************
 
-/*** Macros for RED_LED pin ***/
-#define RED_LED_Set()               (GPIOB_REGS->GPIO_LATSET = (1U<<0U))
-#define RED_LED_Clear()             (GPIOB_REGS->GPIO_LATCLR = (1U<<0U))
-#define RED_LED_Toggle()            (GPIOB_REGS->GPIO_LATINV= (1U<<0U))
-#define RED_LED_Get()               ((GPIOB_REGS->GPIO_PORT >> 0U) & 0x1U)
-#define RED_LED_OutputEnable()      (GPIOB_REGS->GPIO_TRISCLR = (1U<<0U))
-#define RED_LED_InputEnable()       (GPIOB_REGS->GPIO_TRISSET = (1U<<0U))
-#define RED_LED_PIN                  GPIO_PIN_RB0
-/*** Macros for GREEN_LED pin ***/
-#define GREEN_LED_Set()               (GPIOB_REGS->GPIO_LATSET = (1U<<3U))
-#define GREEN_LED_Clear()             (GPIOB_REGS->GPIO_LATCLR = (1U<<3U))
-#define GREEN_LED_Toggle()            (GPIOB_REGS->GPIO_LATINV= (1U<<3U))
-#define GREEN_LED_Get()               ((GPIOB_REGS->GPIO_PORT >> 3U) & 0x1U)
-#define GREEN_LED_OutputEnable()      (GPIOB_REGS->GPIO_TRISCLR = (1U<<3U))
-#define GREEN_LED_InputEnable()       (GPIOB_REGS->GPIO_TRISSET = (1U<<3U))
-#define GREEN_LED_PIN                  GPIO_PIN_RB3
-/*** Macros for BLUE_LED pin ***/
-#define BLUE_LED_Set()               (GPIOB_REGS->GPIO_LATSET = (1U<<5U))
-#define BLUE_LED_Clear()             (GPIOB_REGS->GPIO_LATCLR = (1U<<5U))
-#define BLUE_LED_Toggle()            (GPIOB_REGS->GPIO_LATINV= (1U<<5U))
-#define BLUE_LED_Get()               ((GPIOB_REGS->GPIO_PORT >> 5U) & 0x1U)
-#define BLUE_LED_OutputEnable()      (GPIOB_REGS->GPIO_TRISCLR = (1U<<5U))
-#define BLUE_LED_InputEnable()       (GPIOB_REGS->GPIO_TRISSET = (1U<<5U))
-#define BLUE_LED_PIN                  GPIO_PIN_RB5
 
 
 // *****************************************************************************

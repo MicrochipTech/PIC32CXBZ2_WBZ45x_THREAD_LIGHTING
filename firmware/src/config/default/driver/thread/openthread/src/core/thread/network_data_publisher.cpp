@@ -59,10 +59,6 @@ Publisher::Publisher(Instance &aInstance)
 #if OPENTHREAD_CONFIG_TMF_NETDATA_SERVICE_ENABLE
     , mDnsSrpServiceEntry(aInstance)
 #endif
-#if OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
-    , mPrefixCallback(nullptr)
-    , mPrefixCallbackContext(nullptr)
-#endif
     , mTimer(aInstance)
 {
 #if OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
@@ -80,12 +76,6 @@ Publisher::Publisher(Instance &aInstance)
 }
 
 #if OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
-
-void Publisher::SetPrefixCallback(PrefixCallback aCallback, void *aContext)
-{
-    mPrefixCallback        = aCallback;
-    mPrefixCallbackContext = aContext;
-}
 
 Error Publisher::PublishOnMeshPrefix(const OnMeshPrefixConfig &aConfig, Requester aRequester)
 {
@@ -223,10 +213,7 @@ bool Publisher::IsAPrefixEntry(const Entry &aEntry) const
 
 void Publisher::NotifyPrefixEntryChange(Event aEvent, const Ip6::Prefix &aPrefix) const
 {
-    if (mPrefixCallback != nullptr)
-    {
-        mPrefixCallback(static_cast<otNetDataPublisherEvent>(aEvent), &aPrefix, mPrefixCallbackContext);
-    }
+    mPrefixCallback.InvokeIfSet(static_cast<otNetDataPublisherEvent>(aEvent), &aPrefix);
 }
 
 #endif // OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
@@ -499,18 +486,7 @@ const char *Publisher::Entry::StateToString(State aState)
 //---------------------------------------------------------------------------------------------------------------------
 // Publisher::DnsSrpServiceEntry
 
-Publisher::DnsSrpServiceEntry::DnsSrpServiceEntry(Instance &aInstance)
-    : mCallback(nullptr)
-    , mCallbackContext(nullptr)
-{
-    Init(aInstance);
-}
-
-void Publisher::DnsSrpServiceEntry::SetCallback(DnsSrpServiceCallback aCallback, void *aContext)
-{
-    mCallback        = aCallback;
-    mCallbackContext = aContext;
-}
+Publisher::DnsSrpServiceEntry::DnsSrpServiceEntry(Instance &aInstance) { Init(aInstance); }
 
 void Publisher::DnsSrpServiceEntry::PublishAnycast(uint8_t aSequenceNumber)
 {
@@ -649,10 +625,7 @@ void Publisher::DnsSrpServiceEntry::Notify(Event aEvent) const
     Get<Srp::Server>().HandleNetDataPublisherEvent(aEvent);
 #endif
 
-    if (mCallback != nullptr)
-    {
-        mCallback(static_cast<otNetDataPublisherEvent>(aEvent), mCallbackContext);
-    }
+    mCallback.InvokeIfSet(static_cast<otNetDataPublisherEvent>(aEvent));
 }
 
 void Publisher::DnsSrpServiceEntry::Process(void)
@@ -699,7 +672,7 @@ void Publisher::DnsSrpServiceEntry::CountAnycastEntries(uint8_t &aNumEntries, ui
     // smaller RLCO16.
 
     Service::DnsSrpAnycast::ServiceData serviceData(mInfo.GetSequenceNumber());
-    const ServiceTlv *                  serviceTlv = nullptr;
+    const ServiceTlv                   *serviceTlv = nullptr;
     ServiceData                         data;
 
     data.Init(&serviceData, serviceData.GetLength());
@@ -986,7 +959,7 @@ exit:
 
 void Publisher::PrefixEntry::CountOnMeshPrefixEntries(uint8_t &aNumEntries, uint8_t &aNumPreferredEntries) const
 {
-    const PrefixTlv *      prefixTlv;
+    const PrefixTlv       *prefixTlv;
     const BorderRouterTlv *brSubTlv;
     int8_t                 preference             = BorderRouterEntry::PreferenceFromFlags(mFlags);
     uint16_t               flagsWithoutPreference = BorderRouterEntry::FlagsWithoutPreference(mFlags);
@@ -1033,7 +1006,7 @@ exit:
 
 void Publisher::PrefixEntry::CountExternalRouteEntries(uint8_t &aNumEntries, uint8_t &aNumPreferredEntries) const
 {
-    const PrefixTlv *  prefixTlv;
+    const PrefixTlv   *prefixTlv;
     const HasRouteTlv *hrSubTlv;
     int8_t             preference             = HasRouteEntry::PreferenceFromFlags(static_cast<uint8_t>(mFlags));
     uint8_t            flagsWithoutPreference = HasRouteEntry::FlagsWithoutPreference(static_cast<uint8_t>(mFlags));

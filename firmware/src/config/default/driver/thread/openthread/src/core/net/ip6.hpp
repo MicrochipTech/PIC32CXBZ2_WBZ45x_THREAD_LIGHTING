@@ -42,6 +42,7 @@
 #include <openthread/nat64.h>
 #include <openthread/udp.h>
 
+#include "common/callback.hpp"
 #include "common/encoding.hpp"
 #include "common/frame_data.hpp"
 #include "common/locator.hpp"
@@ -227,9 +228,9 @@ public:
      * @retval kErrorParse    Encountered a malformed header when processing the message.
      *
      */
-    Error HandleDatagram(Message &     aMessage,
+    Error HandleDatagram(Message      &aMessage,
                          MessageOrigin aOrigin,
-                         const void *  aLinkMessageInfo = nullptr,
+                         const void   *aLinkMessageInfo = nullptr,
                          bool          aIsReassembled   = false);
 
     /**
@@ -246,7 +247,10 @@ public:
      * @sa SetReceiveIp6FilterEnabled
      *
      */
-    void SetReceiveDatagramCallback(otIp6ReceiveCallback aCallback, void *aCallbackContext);
+    void SetReceiveDatagramCallback(otIp6ReceiveCallback aCallback, void *aCallbackContext)
+    {
+        mReceiveIp6DatagramCallback.Set(aCallback, aCallbackContext);
+    }
 
 #if OPENTHREAD_CONFIG_NAT64_TRANSLATOR_ENABLE
     /**
@@ -259,7 +263,10 @@ public:
      * @sa SetReceiveDatagramCallback
      *
      */
-    void SetNat64ReceiveIp4DatagramCallback(otNat64ReceiveIp4Callback aCallback, void *aCallbackContext);
+    void SetNat64ReceiveIp4DatagramCallback(otNat64ReceiveIp4Callback aCallback, void *aCallbackContext)
+    {
+        mReceiveIp4DatagramCallback.Set(aCallback, aCallbackContext);
+    }
 #endif
 
     /**
@@ -340,6 +347,30 @@ public:
      */
     static const char *EcnToString(Ecn aEcn);
 
+#if OPENTHREAD_CONFIG_IP6_BR_COUNTERS_ENABLE
+    /**
+     * This method returns a reference to the Border Routing counters.
+     *
+     * @returns A reference to the Border Routing counters.
+     *
+     */
+    const otBorderRoutingCounters &GetBorderRoutingCounters(void) const { return mBorderRoutingCounters; }
+
+    /**
+     * This method returns a reference to the Border Routing counters.
+     *
+     * @returns A reference to the Border Routing counters.
+     *
+     */
+    otBorderRoutingCounters &GetBorderRoutingCounters(void) { return mBorderRoutingCounters; }
+
+    /**
+     * This method resets the Border Routing counters.
+     *
+     */
+    void ResetBorderRoutingCounters(void) { memset(&mBorderRoutingCounters, 0, sizeof(mBorderRoutingCounters)); }
+#endif
+
 private:
     static constexpr uint8_t kDefaultHopLimit      = OPENTHREAD_CONFIG_IP6_HOP_LIMIT_DEFAULT;
     static constexpr uint8_t kIp6ReassemblyTimeout = OPENTHREAD_CONFIG_IP6_REASSEMBLY_TIMEOUT;
@@ -352,18 +383,18 @@ private:
     static Error   GetDatagramPriority(const uint8_t *aData, uint16_t aDataLen, Message::Priority &aPriority);
 
     void  EnqueueDatagram(Message &aMessage);
-    Error ProcessReceiveCallback(Message &          aMessage,
+    Error ProcessReceiveCallback(Message           &aMessage,
                                  MessageOrigin      aOrigin,
                                  const MessageInfo &aMessageInfo,
                                  uint8_t            aIpProto,
                                  bool               aAllowReceiveFilter,
                                  Message::Ownership aMessageOwnership);
-    Error HandleExtensionHeaders(Message &     aMessage,
+    Error HandleExtensionHeaders(Message      &aMessage,
                                  MessageOrigin aOrigin,
-                                 MessageInfo & aMessageInfo,
-                                 Header &      aHeader,
-                                 uint8_t &     aNextHeader,
-                                 bool &        aReceive);
+                                 MessageInfo  &aMessageInfo,
+                                 Header       &aHeader,
+                                 uint8_t      &aNextHeader,
+                                 bool         &aReceive);
     Error FragmentDatagram(Message &aMessage, uint8_t aIpProto);
     Error HandleFragment(Message &aMessage, MessageOrigin aOrigin, MessageInfo &aMessageInfo);
 #if OPENTHREAD_CONFIG_IP6_FRAGMENTATION_ENABLE
@@ -377,24 +408,26 @@ private:
     Error InsertMplOption(Message &aMessage, Header &aHeader, MessageInfo &aMessageInfo);
     Error RemoveMplOption(Message &aMessage);
     Error HandleOptions(Message &aMessage, Header &aHeader, bool aIsOutbound, bool &aReceive);
-    Error HandlePayload(Header &           aIp6Header,
-                        Message &          aMessage,
-                        MessageInfo &      aMessageInfo,
+    Error HandlePayload(Header            &aIp6Header,
+                        Message           &aMessage,
+                        MessageInfo       &aMessageInfo,
                         uint8_t            aIpProto,
                         Message::Ownership aMessageOwnership);
     bool  ShouldForwardToThread(const MessageInfo &aMessageInfo, MessageOrigin aOrigin) const;
     bool  IsOnLink(const Address &aAddress) const;
+#if OPENTHREAD_CONFIG_IP6_BR_COUNTERS_ENABLE
+    void UpdateBorderRoutingCounters(const Header &aHeader, uint16_t aMessageLength, bool aIsInbound);
+#endif
 
     using SendQueueTask = TaskletIn<Ip6, &Ip6::HandleSendQueue>;
 
-    bool                 mForwardingEnabled;
-    bool                 mIsReceiveIp6FilterEnabled;
-    otIp6ReceiveCallback mReceiveIp6DatagramCallback;
-    void *               mReceiveIp6DatagramCallbackContext;
+    bool mForwardingEnabled;
+    bool mIsReceiveIp6FilterEnabled;
+
+    Callback<otIp6ReceiveCallback> mReceiveIp6DatagramCallback;
 
 #if OPENTHREAD_CONFIG_NAT64_TRANSLATOR_ENABLE
-    otNat64ReceiveIp4Callback mReceiveIp4DatagramCallback;
-    void *                    mReceiveIp4DatagramCallbackContext;
+    Callback<otNat64ReceiveIp4Callback> mReceiveIp4DatagramCallback;
 #endif
 
     PriorityQueue mSendQueue;
@@ -410,6 +443,10 @@ private:
 
 #if OPENTHREAD_CONFIG_IP6_FRAGMENTATION_ENABLE
     MessageQueue mReassemblyList;
+#endif
+
+#if OPENTHREAD_CONFIG_IP6_BR_COUNTERS_ENABLE
+    otBorderRoutingCounters mBorderRoutingCounters;
 #endif
 };
 

@@ -53,21 +53,19 @@ RegisterLogModule("PanIdQueryClnt");
 
 PanIdQueryClient::PanIdQueryClient(Instance &aInstance)
     : InstanceLocator(aInstance)
-    , mCallback(nullptr)
-    , mContext(nullptr)
 {
 }
 
 Error PanIdQueryClient::SendQuery(uint16_t                            aPanId,
                                   uint32_t                            aChannelMask,
-                                  const Ip6::Address &                aAddress,
+                                  const Ip6::Address                 &aAddress,
                                   otCommissionerPanIdConflictCallback aCallback,
-                                  void *                              aContext)
+                                  void                               *aContext)
 {
     Error                   error = kErrorNone;
     MeshCoP::ChannelMaskTlv channelMask;
     Tmf::MessageInfo        messageInfo(GetInstance());
-    Coap::Message *         message = nullptr;
+    Coap::Message          *message = nullptr;
 
     VerifyOrExit(Get<MeshCoP::Commissioner>().IsActive(), error = kErrorInvalidState);
     VerifyOrExit((message = Get<Tmf::Agent>().NewPriorityMessage()) != nullptr, error = kErrorNoBufs);
@@ -89,8 +87,7 @@ Error PanIdQueryClient::SendQuery(uint16_t                            aPanId,
 
     LogInfo("sent panid query");
 
-    mCallback = aCallback;
-    mContext  = aContext;
+    mCallback.Set(aCallback, aContext);
 
 exit:
     FreeMessageOnError(message, error);
@@ -112,10 +109,7 @@ void PanIdQueryClient::HandleTmf<kUriPanIdConflict>(Coap::Message &aMessage, con
 
     VerifyOrExit((mask = MeshCoP::ChannelMaskTlv::GetChannelMask(aMessage)) != 0);
 
-    if (mCallback != nullptr)
-    {
-        mCallback(panId, mask, mContext);
-    }
+    mCallback.InvokeIfSet(panId, mask);
 
     SuccessOrExit(Get<Tmf::Agent>().SendEmptyAck(aMessage, responseInfo));
 

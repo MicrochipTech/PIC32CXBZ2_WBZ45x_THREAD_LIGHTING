@@ -145,10 +145,7 @@ exit:
     return;
 }
 
-void Server::Stop(void)
-{
-    IgnoreError(mSocket.Close());
-}
+void Server::Stop(void) { IgnoreError(mSocket.Close()); }
 
 void Server::AddPrefixAgent(const Ip6::Prefix &aIp6Prefix, const Lowpan::Context &aContext)
 {
@@ -333,14 +330,14 @@ exit:
     return error;
 }
 
-Error Server::SendReply(const Ip6::Address & aDst,
+Error Server::SendReply(const Ip6::Address  &aDst,
                         const TransactionId &aTransactionId,
-                        ClientIdentifier &   aClientId,
-                        IaNa &               aIaNa)
+                        ClientIdentifier    &aClientId,
+                        IaNa                &aIaNa)
 {
     Error            error = kErrorNone;
     Ip6::MessageInfo messageInfo;
-    Message *        message;
+    Message         *message;
 
     VerifyOrExit((message = mSocket.NewMessage(0)) != nullptr, error = kErrorNoBufs);
     SuccessOrExit(error = AppendHeader(*message, aTransactionId));

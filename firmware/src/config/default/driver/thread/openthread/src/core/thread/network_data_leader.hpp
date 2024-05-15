@@ -134,36 +134,34 @@ public:
      *
      * @param[in]   aSource             A reference to the IPv6 source address.
      * @param[in]   aDestination        A reference to the IPv6 destination address.
-     * @param[out]  aPrefixMatchLength  A pointer to output the longest prefix match length in bits.
-     * @param[out]  aRloc16             A pointer to the RLOC16 for the selected route.
+     * @param[out]  aRloc16             A reference to return the RLOC16 for the selected route.
      *
-     * @retval kErrorNone      Successfully found a route.
+     * @retval kErrorNone      Successfully found a route. @p aRloc16 is updated.
      * @retval kErrorNoRoute   No valid route was found.
      *
      */
-    Error RouteLookup(const Ip6::Address &aSource,
-                      const Ip6::Address &aDestination,
-                      uint8_t *           aPrefixMatchLength,
-                      uint16_t *          aRloc16) const;
+    Error RouteLookup(const Ip6::Address &aSource, const Ip6::Address &aDestination, uint16_t &aRloc16) const;
 
     /**
-     * This method is used by non-Leader devices to set newly received Network Data from the Leader.
+     * This method is used by non-Leader devices to set Network Data by reading it from a message from Leader.
      *
      * @param[in]  aVersion        The Version value.
      * @param[in]  aStableVersion  The Stable Version value.
      * @param[in]  aType           The Network Data type to set, the full set or stable subset.
-     * @param[in]  aMessage        A reference to the MLE message.
-     * @param[in]  aMessageOffset  The offset in @p aMessage for the Network Data TLV.
+     * @param[in]  aMessage        A reference to the message.
+     * @param[in]  aOffset         The offset in @p aMessage pointing to start of Network Data.
+     * @param[in]  aLength         The length of Network Data.
      *
      * @retval kErrorNone   Successfully set the network data.
-     * @retval kErrorParse  Network Data TLV in @p aMessage is not valid.
+     * @retval kErrorParse  Network Data in @p aMessage is not valid.
      *
      */
     Error SetNetworkData(uint8_t        aVersion,
                          uint8_t        aStableVersion,
                          Type           aType,
                          const Message &aMessage,
-                         uint16_t       aMessageOffset);
+                         uint16_t       aOffset,
+                         uint16_t       aLength);
 
     /**
      * This method returns a pointer to the Commissioning Data.
@@ -265,7 +263,7 @@ public:
     Error GetServiceId(uint32_t           aEnterpriseNumber,
                        const ServiceData &aServiceData,
                        bool               aServerStable,
-                       uint8_t &          aServiceId) const;
+                       uint8_t           &aServiceId) const;
 
     /**
      * This methods gets the preferred NAT64 prefix from network data.
@@ -292,11 +290,14 @@ private:
 
     void RemoveCommissioningData(void);
 
-    Error ExternalRouteLookup(uint8_t             aDomainId,
-                              const Ip6::Address &aDestination,
-                              uint8_t *           aPrefixMatchLength,
-                              uint16_t *          aRloc16) const;
-    Error DefaultRouteLookup(const PrefixTlv &aPrefix, uint16_t *aRloc16) const;
+    template <typename EntryType> int CompareRouteEntries(const EntryType &aFirst, const EntryType &aSecond) const;
+    int                               CompareRouteEntries(int8_t   aFirstPreference,
+                                                          uint16_t aFirstRloc,
+                                                          int8_t   aSecondPreference,
+                                                          uint16_t aSecondRloc) const;
+
+    Error ExternalRouteLookup(uint8_t aDomainId, const Ip6::Address &aDestination, uint16_t &aRloc16) const;
+    Error DefaultRouteLookup(const PrefixTlv &aPrefix, uint16_t &aRloc16) const;
     Error SteeringDataCheck(const FilterIndexes &aFilterIndexes) const;
     void  GetContextForMeshLocalPrefix(Lowpan::Context &aContext) const;
 

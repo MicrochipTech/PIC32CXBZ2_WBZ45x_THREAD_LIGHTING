@@ -1,6 +1,6 @@
 // DOM-IGNORE-BEGIN
 /*******************************************************************************
-* Copyright (C) 2023 Microchip Technology Inc. and its subsidiaries.
+* Copyright (C) 2022 Microchip Technology Inc. and its subsidiaries.
 *
 * Subject to your compliance with these terms, you may use Microchip software
 * and any derivatives exclusively with Microchip products. It is your
@@ -79,7 +79,7 @@
 
 float temp_demo_value = 25.0;
 devMsgType_t demoMsg;
-devTypeRGBLight_t rgbLED = {0, GREEN_H, GREEN_S, GREEN_V};
+devTypeRGBLight_t rgbLED = {1, GREEN_H, GREEN_S, GREEN_V};
 
 // *****************************************************************************
 /* Application Data
@@ -239,6 +239,8 @@ void APP_Tasks ( void )
             threadDevice.devType = DEVICE_TYPE_LIGHT;
             threadDevice.devNameSize = sizeof(DEMO_DEVICE_NAME);
             memcpy(&threadDevice.devName, DEMO_DEVICE_NAME, sizeof(DEMO_DEVICE_NAME));
+            
+            RGB_LED_SetLedColorHSV(rgbLED.hue, rgbLED.saturation, rgbLED.level);
 
             //tempTimerHandle = xTimerCreate("temp app tmr", (APP_TEMP_TIMER_INTERVAL_MS / portTICK_PERIOD_MS), true, ( void * ) 0, tempTmrCb);
             //xTimerStart(tempTimerHandle, 0);
@@ -291,7 +293,7 @@ void APP_Tasks ( void )
                 }
                 else if(p_appMsg->msgId == APP_MSG_OT_SEND_ADDR_TMR_EVT)
                 {
-                    threadSendIPAddr();
+                    threadSendPeriodicMsg();
                 }
                 
             }

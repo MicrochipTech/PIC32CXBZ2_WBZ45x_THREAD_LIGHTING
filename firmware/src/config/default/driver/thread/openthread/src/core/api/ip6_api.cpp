@@ -68,10 +68,7 @@ exit:
     return error;
 }
 
-bool otIp6IsEnabled(otInstance *aInstance)
-{
-    return AsCoreType(aInstance).Get<ThreadNetif>().IsUp();
-}
+bool otIp6IsEnabled(otInstance *aInstance) { return AsCoreType(aInstance).Get<ThreadNetif>().IsUp(); }
 
 const otNetifAddress *otIp6GetUnicastAddresses(otInstance *aInstance)
 {
@@ -144,8 +141,8 @@ otMessage *otIp6NewMessage(otInstance *aInstance, const otMessageSettings *aSett
     return AsCoreType(aInstance).Get<Ip6::Ip6>().NewMessage(0, Message::Settings::From(aSettings));
 }
 
-otMessage *otIp6NewMessageFromBuffer(otInstance *             aInstance,
-                                     const uint8_t *          aData,
+otMessage *otIp6NewMessageFromBuffer(otInstance              *aInstance,
+                                     const uint8_t           *aData,
                                      uint16_t                 aDataLength,
                                      const otMessageSettings *aSettings)
 {
@@ -222,10 +219,7 @@ void otIp6GetPrefix(const otIp6Address *aAddress, uint8_t aLength, otIp6Prefix *
     AsCoreType(aAddress).GetPrefix(aLength, AsCoreType(aPrefix));
 }
 
-bool otIp6IsAddressUnspecified(const otIp6Address *aAddress)
-{
-    return AsCoreType(aAddress).IsUnspecified();
-}
+bool otIp6IsAddressUnspecified(const otIp6Address *aAddress) { return AsCoreType(aAddress).IsUnspecified(); }
 
 otError otIp6SelectSourceAddress(otInstance *aInstance, otMessageInfo *aMessageInfo)
 {
@@ -241,12 +235,12 @@ exit:
 }
 
 #if OPENTHREAD_FTD && OPENTHREAD_CONFIG_TMF_PROXY_MLR_ENABLE && OPENTHREAD_CONFIG_COMMISSIONER_ENABLE
-otError otIp6RegisterMulticastListeners(otInstance *                            aInstance,
-                                        const otIp6Address *                    aAddresses,
+otError otIp6RegisterMulticastListeners(otInstance                             *aInstance,
+                                        const otIp6Address                     *aAddresses,
                                         uint8_t                                 aAddressNum,
-                                        const uint32_t *                        aTimeout,
+                                        const uint32_t                         *aTimeout,
                                         otIp6RegisterMulticastListenersCallback aCallback,
-                                        void *                                  aContext)
+                                        void                                   *aContext)
 {
     return AsCoreType(aInstance).Get<MlrManager>().RegisterMulticastListeners(aAddresses, aAddressNum, aTimeout,
                                                                               aCallback, aContext);
@@ -255,10 +249,7 @@ otError otIp6RegisterMulticastListeners(otInstance *                            
 
 #if OPENTHREAD_CONFIG_IP6_SLAAC_ENABLE
 
-bool otIp6IsSlaacEnabled(otInstance *aInstance)
-{
-    return AsCoreType(aInstance).Get<Utils::Slaac>().IsEnabled();
-}
+bool otIp6IsSlaacEnabled(otInstance *aInstance) { return AsCoreType(aInstance).Get<Utils::Slaac>().IsEnabled(); }
 
 void otIp6SetSlaacEnabled(otInstance *aInstance, bool aEnabled)
 {
@@ -290,7 +281,16 @@ otError otIp6SetMeshLocalIid(otInstance *aInstance, const otIp6InterfaceIdentifi
 
 #endif
 
-const char *otIp6ProtoToString(uint8_t aIpProto)
+const char *otIp6ProtoToString(uint8_t aIpProto) { return Ip6::Ip6::IpProtoToString(aIpProto); }
+
+#if OPENTHREAD_CONFIG_IP6_BR_COUNTERS_ENABLE
+const otBorderRoutingCounters *otIp6GetBorderRoutingCounters(otInstance *aInstance)
 {
-    return Ip6::Ip6::IpProtoToString(aIpProto);
+    return &AsCoreType(aInstance).Get<Ip6::Ip6>().GetBorderRoutingCounters();
 }
+
+void otIp6ResetBorderRoutingCounters(otInstance *aInstance)
+{
+    AsCoreType(aInstance).Get<Ip6::Ip6>().ResetBorderRoutingCounters();
+}
+#endif

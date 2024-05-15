@@ -134,7 +134,7 @@ void RadioSelector::UpdateOnSendDone(Mac::TxFrame &aFrame, Error aTxError)
     LogLevel       logLevel  = kLogLevelInfo;
     Mac::RadioType radioType = aFrame.GetRadioType();
     Mac::Address   macDest;
-    Neighbor *     neighbor;
+    Neighbor      *neighbor;
 
 #if OPENTHREAD_CONFIG_RADIO_LINK_TREL_ENABLE
     if (radioType == Mac::kRadioTypeTrel)
@@ -257,7 +257,7 @@ Mac::RadioType RadioSelector::Select(Mac::RadioTypes aRadioOptions, const Neighb
 
 Mac::TxFrame &RadioSelector::SelectRadio(Message &aMessage, const Mac::Address &aMacDest, Mac::TxFrames &aTxFrames)
 {
-    Neighbor *      neighbor;
+    Neighbor       *neighbor;
     Mac::RadioType  selectedRadio;
     Mac::RadioTypes selections;
 
@@ -358,7 +358,7 @@ Mac::RadioType RadioSelector::SelectPollFrameRadio(const Neighbor &aParent)
 #if OT_SHOULD_LOG_AT(OT_LOG_LEVEL_INFO)
 
 void RadioSelector::Log(LogLevel        aLogLevel,
-                        const char *    aActionText,
+                        const char     *aActionText,
                         Mac::RadioType  aRadioType,
                         const Neighbor &aNeighbor)
 {
@@ -387,9 +387,7 @@ exit:
 
 #else // #if OT_SHOULD_LOG_AT(OT_LOG_LEVEL_INFO)
 
-void RadioSelector::Log(LogLevel, const char *, Mac::RadioType, const Neighbor &)
-{
-}
+void RadioSelector::Log(LogLevel, const char *, Mac::RadioType, const Neighbor &) {}
 
 #endif // #if OT_SHOULD_LOG_AT(OT_LOG_LEVEL_INFO)
 

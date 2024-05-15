@@ -46,6 +46,7 @@
 #include <openthread/netdata_publisher.h>
 
 #include "border_router/routing_manager.hpp"
+#include "common/callback.hpp"
 #include "common/clearable.hpp"
 #include "common/equatable.hpp"
 #include "common/error.hpp"
@@ -212,7 +213,7 @@ public:
      * @param[in] aContext         A pointer to application-specific context (used when @p aCallback is invoked).
      *
      */
-    void SetPrefixCallback(PrefixCallback aCallback, void *aContext);
+    void SetPrefixCallback(PrefixCallback aCallback, void *aContext) { mPrefixCallback.Set(aCallback, aContext); }
 
     /**
      * This method requests an on-mesh prefix to be published in the Thread Network Data.
@@ -308,7 +309,7 @@ private:
         static constexpr uint32_t kExtraDelayToRemovePeferred =
             OPENTHREAD_CONFIG_NETDATA_PUBLISHER_EXTRA_DELAY_TIME_TO_REMOVE_PREFERRED;
 
-        static constexpr uint16_t kInfoStringSize = 50;
+        static constexpr uint16_t kInfoStringSize = 60;
 
         typedef String<kInfoStringSize> InfoString;
 
@@ -346,7 +347,7 @@ private:
 
     public:
         explicit DnsSrpServiceEntry(Instance &aInstance);
-        void SetCallback(DnsSrpServiceCallback aCallback, void *aContext);
+        void SetCallback(DnsSrpServiceCallback aCallback, void *aContext) { mCallback.Set(aCallback, aContext); }
         void PublishAnycast(uint8_t aSequenceNumber);
         void PublishUnicast(const Ip6::Address &aAddress, uint16_t aPort);
         void PublishUnicast(uint16_t aPort);
@@ -401,9 +402,8 @@ private:
         void CountAnycastEntries(uint8_t &aNumEntries, uint8_t &aNumPreferredEntries) const;
         void CountUnicastEntries(uint8_t &aNumEntries, uint8_t &aNumPreferredEntries) const;
 
-        Info                  mInfo;
-        DnsSrpServiceCallback mCallback;
-        void *                mCallbackContext;
+        Info                            mInfo;
+        Callback<DnsSrpServiceCallback> mCallback;
     };
 #endif // OPENTHREAD_CONFIG_TMF_NETDATA_SERVICE_ENABLE
 
@@ -467,8 +467,8 @@ private:
 #endif
 
 #if OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
-    PrefixEntry *      FindOrAllocatePrefixEntry(const Ip6::Prefix &aPrefix, Requester aRequester);
-    PrefixEntry *      FindMatchingPrefixEntry(const Ip6::Prefix &aPrefix);
+    PrefixEntry       *FindOrAllocatePrefixEntry(const Ip6::Prefix &aPrefix, Requester aRequester);
+    PrefixEntry       *FindMatchingPrefixEntry(const Ip6::Prefix &aPrefix);
     const PrefixEntry *FindMatchingPrefixEntry(const Ip6::Prefix &aPrefix) const;
     bool               IsAPrefixEntry(const Entry &aEntry) const;
     void               NotifyPrefixEntryChange(Event aEvent, const Ip6::Prefix &aPrefix) const;
@@ -485,9 +485,8 @@ private:
 #endif
 
 #if OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
-    PrefixEntry    mPrefixEntries[kMaxUserPrefixEntries + kMaxRoutingManagerPrefixEntries];
-    PrefixCallback mPrefixCallback;
-    void *         mPrefixCallbackContext;
+    PrefixEntry              mPrefixEntries[kMaxUserPrefixEntries + kMaxRoutingManagerPrefixEntries];
+    Callback<PrefixCallback> mPrefixCallback;
 #endif
 
     PublisherTimer mTimer;

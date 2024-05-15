@@ -198,8 +198,8 @@ private:
 
     void UpdateTimeTickerRegistration(void);
 
-    static void HandleDuaResponse(void *               aContext,
-                                  otMessage *          aMessage,
+    static void HandleDuaResponse(void                *aContext,
+                                  otMessage           *aMessage,
                                   const otMessageInfo *aMessageInfo,
                                   Error                aResult);
     void        HandleDuaResponse(Coap::Message *aMessage, const Ip6::MessageInfo *aMessageInfo, Error aResult);

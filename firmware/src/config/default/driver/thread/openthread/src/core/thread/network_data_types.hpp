@@ -161,6 +161,16 @@ inline RoutePreference RoutePreferenceFromValue(uint8_t aValue)
 }
 
 /**
+ * This function converts a router preference to a human-readable string.
+ *
+ * @param[in] aPreference  The preference to convert
+ *
+ * @returns The string representation of @p aPreference.
+ *
+ */
+const char *RoutePreferenceToString(RoutePreference aPreference);
+
+/**
  * This class represents an On-mesh Prefix (Border Router) configuration.
  *
  */
@@ -215,8 +225,8 @@ private:
 #if OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
     uint16_t ConvertToTlvFlags(void) const;
 #endif
-    void SetFrom(const PrefixTlv &        aPrefixTlv,
-                 const BorderRouterTlv &  aBorderRouterTlv,
+    void SetFrom(const PrefixTlv         &aPrefixTlv,
+                 const BorderRouterTlv   &aBorderRouterTlv,
                  const BorderRouterEntry &aBorderRouterEntry);
     void SetFromTlvFlags(uint16_t aFlags);
 };
@@ -275,9 +285,9 @@ private:
 #if OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
     uint8_t ConvertToTlvFlags(void) const;
 #endif
-    void SetFrom(Instance &           aInstance,
-                 const PrefixTlv &    aPrefixTlv,
-                 const HasRouteTlv &  aHasRouteTlv,
+    void SetFrom(Instance            &aInstance,
+                 const PrefixTlv     &aPrefixTlv,
+                 const HasRouteTlv   &aHasRouteTlv,
                  const HasRouteEntry &aHasRouteEntry);
     void SetFromTlvFlags(uint8_t aFlags);
 };

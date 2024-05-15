@@ -64,6 +64,11 @@ void otBorderRoutingSetRouteInfoOptionPreference(otInstance *aInstance, otRouteP
         static_cast<NetworkData::RoutePreference>(aPreference));
 }
 
+void otBorderRoutingClearRouteInfoOptionPreference(otInstance *aInstance)
+{
+    AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().ClearRouteInfoOptionPreference();
+}
+
 otError otBorderRoutingGetOmrPrefix(otInstance *aInstance, otIp6Prefix *aPrefix)
 {
     return AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().GetOmrPrefix(AsCoreType(aPrefix));
@@ -95,8 +100,8 @@ otError otBorderRoutingGetNat64Prefix(otInstance *aInstance, otIp6Prefix *aPrefi
     return AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().GetNat64Prefix(AsCoreType(aPrefix));
 }
 
-otError otBorderRoutingGetFavoredNat64Prefix(otInstance *       aInstance,
-                                             otIp6Prefix *      aPrefix,
+otError otBorderRoutingGetFavoredNat64Prefix(otInstance        *aInstance,
+                                             otIp6Prefix       *aPrefix,
                                              otRoutePreference *aPreference)
 {
     otError                                       error;
@@ -120,9 +125,9 @@ void otBorderRoutingPrefixTableInitIterator(otInstance *aInstance, otBorderRouti
     AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().InitPrefixTableIterator(*aIterator);
 }
 
-otError otBorderRoutingGetNextPrefixTableEntry(otInstance *                        aInstance,
+otError otBorderRoutingGetNextPrefixTableEntry(otInstance                         *aInstance,
                                                otBorderRoutingPrefixTableIterator *aIterator,
-                                               otBorderRoutingPrefixTableEntry *   aEntry)
+                                               otBorderRoutingPrefixTableEntry    *aEntry)
 {
     AssertPointerIsNotNull(aIterator);
     AssertPointerIsNotNull(aEntry);

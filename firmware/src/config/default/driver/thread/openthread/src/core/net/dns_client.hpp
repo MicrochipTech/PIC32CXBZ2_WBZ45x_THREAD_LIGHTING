@@ -257,10 +257,10 @@ public:
         void  SelectSection(Section aSection, uint16_t &aOffset, uint16_t &aNumRecord) const;
         Error CheckForHostNameAlias(Section aSection, Name &aHostName) const;
         Error FindHostAddress(Section       aSection,
-                              const Name &  aHostName,
+                              const Name   &aHostName,
                               uint16_t      aIndex,
                               Ip6::Address &aAddress,
-                              uint32_t &    aTtl) const;
+                              uint32_t     &aTtl) const;
 #if OPENTHREAD_CONFIG_DNS_CLIENT_NAT64_ENABLE
         Error FindARecord(Section aSection, const Name &aHostName, uint16_t aIndex, ARecord &aARecord) const;
 #endif
@@ -269,8 +269,8 @@ public:
         Error FindServiceInfo(Section aSection, const Name &aName, ServiceInfo &aServiceInfo) const;
 #endif
 
-        Instance *     mInstance;              // The OpenThread instance.
-        Query *        mQuery;                 // The associated query.
+        Instance      *mInstance;              // The OpenThread instance.
+        Query         *mQuery;                 // The associated query.
         const Message *mMessage;               // The response message.
         uint16_t       mAnswerOffset;          // Answer section offset in `mMessage`.
         uint16_t       mAnswerRecordCount;     // Number of records in answer section.
@@ -486,9 +486,9 @@ public:
          * @retval kErrorNoBufs  Either the label or name does not fit in the given buffers.
          *
          */
-        Error GetServiceName(char *   aLabelBuffer,
+        Error GetServiceName(char    *aLabelBuffer,
                              uint8_t  aLabelBufferSize,
-                             char *   aNameBuffer,
+                             char    *aNameBuffer,
                              uint16_t aNameBufferSize) const;
 
         /**
@@ -604,9 +604,9 @@ public:
      * @retval kErrorInvalidState   Cannot send query since Thread interface is not up.
      *
      */
-    Error ResolveAddress(const char *       aHostName,
+    Error ResolveAddress(const char        *aHostName,
                          AddressCallback    aCallback,
-                         void *             aContext,
+                         void              *aContext,
                          const QueryConfig *aConfig = nullptr);
 
 #if OPENTHREAD_CONFIG_DNS_CLIENT_NAT64_ENABLE
@@ -631,9 +631,9 @@ public:
      * @retval kErrorInvalidState   Cannot send query since Thread interface is not up, or there is no NAT64 prefix.
      *
      */
-    Error ResolveIp4Address(const char *       aHostName,
+    Error ResolveIp4Address(const char        *aHostName,
                             AddressCallback    aCallback,
-                            void *             aContext,
+                            void              *aContext,
                             const QueryConfig *aConfig = nullptr);
 #endif
 
@@ -655,9 +655,9 @@ public:
      * @retval kErrorNoBufs     Insufficient buffer to prepare and send query.
      *
      */
-    Error Browse(const char *       aServiceName,
+    Error Browse(const char        *aServiceName,
                  BrowseCallback     aCallback,
-                 void *             aContext,
+                 void              *aContext,
                  const QueryConfig *aConfig = nullptr);
 
     /**
@@ -678,11 +678,11 @@ public:
      * @retval kErrorInvalidArgs  @p aInstanceLabel is `nullptr`.
      *
      */
-    Error ResolveService(const char *         aInstanceLabel,
-                         const char *         aServiceName,
+    Error ResolveService(const char          *aInstanceLabel,
+                         const char          *aServiceName,
                          otDnsServiceCallback aCallback,
-                         void *               aContext,
-                         const QueryConfig *  aConfig = nullptr);
+                         void                *aContext,
+                         const QueryConfig   *aConfig = nullptr);
 
 #endif // OPENTHREAD_CONFIG_DNS_CLIENT_SERVICE_DISCOVERY_ENABLE
 
@@ -717,7 +717,7 @@ private:
         QueryType   mQueryType;
         uint16_t    mMessageId;
         Callback    mCallback;
-        void *      mCallbackContext;
+        void       *mCallbackContext;
         TimeMilli   mRetransmissionTime;
         QueryConfig mConfig;
         uint8_t     mTransmissionCount;
@@ -726,11 +726,11 @@ private:
 
     static constexpr uint16_t kNameOffsetInQuery = sizeof(QueryInfo);
 
-    Error       StartQuery(QueryInfo &        aInfo,
+    Error       StartQuery(QueryInfo         &aInfo,
                            const QueryConfig *aConfig,
-                           const char *       aLabel,
-                           const char *       aName,
-                           void *             aContext);
+                           const char        *aLabel,
+                           const char        *aName,
+                           void              *aContext);
     Error       AllocateQuery(const QueryInfo &aInfo, const char *aLabel, const char *aName, Query *&aQuery);
     void        FreeQuery(Query &aQuery);
     void        UpdateQuery(Query &aQuery, const QueryInfo &aInfo) { aQuery.Write(0, aInfo); }
@@ -739,7 +739,7 @@ private:
     void        FinalizeQuery(Response &Response, QueryType aType, Error aError);
     static void GetCallback(const Query &aQuery, Callback &aCallback, void *&aContext);
     Error       AppendNameFromQuery(const Query &aQuery, Message &aMessage);
-    Query *     FindQueryById(uint16_t aMessageId);
+    Query      *FindQueryById(uint16_t aMessageId);
     static void HandleUdpReceive(void *aContext, otMessage *aMessage, const otMessageInfo *aMsgInfo);
     void        ProcessResponse(const Message &aMessage);
     Error       ParseResponse(Response &aResponse, QueryType &aType, Error &aResponseError);

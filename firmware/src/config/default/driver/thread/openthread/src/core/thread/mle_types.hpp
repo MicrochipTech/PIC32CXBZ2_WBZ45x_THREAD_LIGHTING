@@ -86,6 +86,7 @@ constexpr uint16_t kUdpPort = 19788; ///< MLE UDP Port
 constexpr uint32_t kParentRequestRouterTimeout     = 750;  ///< Router Parent Request timeout (in msec)
 constexpr uint32_t kParentRequestDuplicateMargin   = 50;   ///< Margin for duplicate parent request
 constexpr uint32_t kParentRequestReedTimeout       = 1250; ///< Router and REEDs Parent Request timeout (in msec)
+constexpr uint32_t kChildIdResponseTimeout         = 1250; ///< Wait time to receive Child ID Response (in msec)
 constexpr uint32_t kAttachStartJitter              = 50;   ///< Max jitter time added to start of attach (in msec)
 constexpr uint32_t kAnnounceProcessTimeout         = 250;  ///< Delay after Announce rx before channel/pan-id change
 constexpr uint32_t kAnnounceTimeout                = 1400; ///< Total timeout for sending Announce messages (in msec)
@@ -96,9 +97,8 @@ constexpr uint32_t kUnicastRetransmissionDelay     = 1000; ///< Base delay befor
 constexpr uint32_t kChildUpdateRequestPendingDelay = 100;  ///< Delay for aggregating Child Update Req (in msec)
 constexpr uint8_t  kMaxTransmissionCount           = 3;    ///< Max number of times an MLE message may be transmitted
 constexpr uint32_t kMaxResponseDelay               = 1000; ///< Max response delay for a multicast request (in msec)
-constexpr uint32_t kMaxChildIdRequestTimeout       = 5000; ///< Max delay to rx a Child ID Request (in msec)
-constexpr uint32_t kMaxChildUpdateResponseTimeout  = 2000; ///< Max delay to rx a Child Update Response (in msec)
-constexpr uint32_t kMaxLinkRequestTimeout          = 2000; ///< Max delay to rx a Link Accept
+constexpr uint32_t kChildIdRequestTimeout          = 5000; ///< Max delay to rx a Child ID Request (in msec)
+constexpr uint32_t kLinkRequestTimeout             = 2000; ///< Max delay to rx a Link Accept
 constexpr uint8_t  kMulticastLinkRequestDelay      = 5;    ///< Max delay for sending a mcast Link Request (in sec)
 
 constexpr uint32_t kMinTimeoutKeepAlive = (((kMaxChildKeepAliveAttempts + 1) * kUnicastRetransmissionDelay) / 1000);
@@ -182,14 +182,6 @@ constexpr int8_t kParentPriorityHigh        = 1;  ///< Parent Priority High
 constexpr int8_t kParentPriorityMedium      = 0;  ///< Parent Priority Medium (default)
 constexpr int8_t kParentPriorityLow         = -1; ///< Parent Priority Low
 constexpr int8_t kParentPriorityUnspecified = -2; ///< Parent Priority Unspecified
-
-constexpr uint8_t kLinkQuality3LinkCost = 1;             ///< Link Cost for Link Quality 3
-constexpr uint8_t kLinkQuality2LinkCost = 2;             ///< Link Cost for Link Quality 2
-constexpr uint8_t kLinkQuality1LinkCost = 4;             ///< Link Cost for Link Quality 1
-constexpr uint8_t kLinkQuality0LinkCost = kMaxRouteCost; ///< Link Cost for Link Quality 0
-
-constexpr uint8_t kMplChildDataMessageTimerExpirations  = 0; ///< Number of MPL retransmissions for Children.
-constexpr uint8_t kMplRouterDataMessageTimerExpirations = 2; ///< Number of MPL retransmissions for Routers.
 
 /**
  * This type represents a Thread device role.
@@ -540,7 +532,7 @@ public:
      * @retval FALSE  If the Router ID bit is not set.
      *
      */
-    bool Contains(uint8_t aRouterId) const { return (mRouterIdSet[aRouterId / 8] & (0x80 >> (aRouterId % 8))) != 0; }
+    bool Contains(uint8_t aRouterId) const { return (mRouterIdSet[aRouterId / 8] & MaskFor(aRouterId)) != 0; }
 
     /**
      * This method sets a given Router ID.
@@ -548,7 +540,7 @@ public:
      * @param[in]  aRouterId  The Router ID to set.
      *
      */
-    void Add(uint8_t aRouterId) { mRouterIdSet[aRouterId / 8] |= 0x80 >> (aRouterId % 8); }
+    void Add(uint8_t aRouterId) { mRouterIdSet[aRouterId / 8] |= MaskFor(aRouterId); }
 
     /**
      * This method removes a given Router ID.
@@ -556,9 +548,19 @@ public:
      * @param[in]  aRouterId  The Router ID to remove.
      *
      */
-    void Remove(uint8_t aRouterId) { mRouterIdSet[aRouterId / 8] &= ~(0x80 >> (aRouterId % 8)); }
+    void Remove(uint8_t aRouterId) { mRouterIdSet[aRouterId / 8] &= ~MaskFor(aRouterId); }
+
+    /**
+     * This method calculates the number of allocated Router IDs in the set.
+     *
+     * @returns The number of allocated Router IDs in the set.
+     *
+     */
+    uint8_t GetNumberOfAllocatedIds(void) const;
 
 private:
+    static uint8_t MaskFor(uint8_t aRouterId) { return (0x80 >> (aRouterId % 8)); }
+
     uint8_t mRouterIdSet[BitVectorBytes(Mle::kMaxRouterId + 1)];
 } OT_TOOL_PACKED_END;
 
@@ -582,10 +584,7 @@ typedef Mac::Key Key;
  * @returns The Child ID portion of an RLOC16.
  *
  */
-inline uint16_t ChildIdFromRloc16(uint16_t aRloc16)
-{
-    return aRloc16 & kMaxChildId;
-}
+inline uint16_t ChildIdFromRloc16(uint16_t aRloc16) { return aRloc16 & kMaxChildId; }
 
 /**
  * This function derives the Router ID portion from a given RLOC16.
@@ -595,10 +594,7 @@ inline uint16_t ChildIdFromRloc16(uint16_t aRloc16)
  * @returns The Router ID portion of an RLOC16.
  *
  */
-inline uint8_t RouterIdFromRloc16(uint16_t aRloc16)
-{
-    return aRloc16 >> kRouterIdOffset;
-}
+inline uint8_t RouterIdFromRloc16(uint16_t aRloc16) { return aRloc16 >> kRouterIdOffset; }
 
 /**
  * This function returns whether the two RLOC16 have the same Router ID.
@@ -622,10 +618,7 @@ inline bool RouterIdMatch(uint16_t aRloc16A, uint16_t aRloc16B)
  * @returns The Service ID corresponding to given ALOC16.
  *
  */
-inline uint8_t ServiceIdFromAloc(uint16_t aAloc16)
-{
-    return static_cast<uint8_t>(aAloc16 - kAloc16ServiceStart);
-}
+inline uint8_t ServiceIdFromAloc(uint16_t aAloc16) { return static_cast<uint8_t>(aAloc16 - kAloc16ServiceStart); }
 
 /**
  * This function returns the Service ALOC16 corresponding to a Service ID.
@@ -661,10 +654,7 @@ inline uint16_t CommissionerAloc16FromId(uint16_t aSessionId)
  * @returns The RLOC16 corresponding to the given Router ID.
  *
  */
-inline uint16_t Rloc16FromRouterId(uint8_t aRouterId)
-{
-    return static_cast<uint16_t>(aRouterId << kRouterIdOffset);
-}
+inline uint16_t Rloc16FromRouterId(uint8_t aRouterId) { return static_cast<uint16_t>(aRouterId << kRouterIdOffset); }
 
 /**
  * This function indicates whether or not @p aRloc16 refers to an active router.
@@ -675,10 +665,7 @@ inline uint16_t Rloc16FromRouterId(uint8_t aRouterId)
  * @retval FALSE  If @p aRloc16 does not refer to an active router.
  *
  */
-inline bool IsActiveRouter(uint16_t aRloc16)
-{
-    return ChildIdFromRloc16(aRloc16) == 0;
-}
+inline bool IsActiveRouter(uint16_t aRloc16) { return ChildIdFromRloc16(aRloc16) == 0; }
 
 /**
  * This function converts a device role into a human-readable string.

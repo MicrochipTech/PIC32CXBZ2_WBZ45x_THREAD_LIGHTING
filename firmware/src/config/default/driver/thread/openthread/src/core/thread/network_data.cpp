@@ -425,7 +425,7 @@ void MutableNetworkData::RemoveTemporaryDataIn(PrefixTlv &aPrefix)
             case NetworkDataTlv::kTypeBorderRouter:
             {
                 BorderRouterTlv *borderRouter = As<BorderRouterTlv>(cur);
-                ContextTlv *     context      = aPrefix.FindSubTlv<ContextTlv>();
+                ContextTlv      *context      = aPrefix.FindSubTlv<ContextTlv>();
 
                 // Replace p_border_router_16
                 for (BorderRouterEntry *entry = borderRouter->GetFirstEntry(); entry <= borderRouter->GetLastEntry();
@@ -540,7 +540,7 @@ const ServiceTlv *NetworkData::FindService(uint32_t           aEnterpriseNumber,
     return serviceTlv;
 }
 
-const ServiceTlv *NetworkData::FindNextService(const ServiceTlv * aPrevServiceTlv,
+const ServiceTlv *NetworkData::FindNextService(const ServiceTlv  *aPrevServiceTlv,
                                                uint32_t           aEnterpriseNumber,
                                                const ServiceData &aServiceData,
                                                ServiceMatchMode   aServiceMatchMode) const
@@ -562,14 +562,14 @@ const ServiceTlv *NetworkData::FindNextService(const ServiceTlv * aPrevServiceTl
     return NetworkData(GetInstance(), tlvs, length).FindService(aEnterpriseNumber, aServiceData, aServiceMatchMode);
 }
 
-const ServiceTlv *NetworkData::FindNextThreadService(const ServiceTlv * aPrevServiceTlv,
+const ServiceTlv *NetworkData::FindNextThreadService(const ServiceTlv  *aPrevServiceTlv,
                                                      const ServiceData &aServiceData,
                                                      ServiceMatchMode   aServiceMatchMode) const
 {
     return FindNextService(aPrevServiceTlv, ServiceTlv::kThreadEnterpriseNumber, aServiceData, aServiceMatchMode);
 }
 
-bool NetworkData::MatchService(const ServiceTlv & aServiceTlv,
+bool NetworkData::MatchService(const ServiceTlv  &aServiceTlv,
                                uint32_t           aEnterpriseNumber,
                                const ServiceData &aServiceData,
                                ServiceMatchMode   aServiceMatchMode)
@@ -630,46 +630,7 @@ void MutableNetworkData::Remove(void *aRemoveStart, uint8_t aRemoveLength)
     mLength -= aRemoveLength;
 }
 
-void MutableNetworkData::RemoveTlv(NetworkDataTlv *aTlv)
-{
-    Remove(aTlv, aTlv->GetSize());
-}
-
-Error NetworkData::SendServerDataNotification(uint16_t              aRloc16,
-                                              bool                  aAppendNetDataTlv,
-                                              Coap::ResponseHandler aHandler,
-                                              void *                aContext) const
-{
-    Error            error = kErrorNone;
-    Coap::Message *  message;
-    Tmf::MessageInfo messageInfo(GetInstance());
-
-    message = Get<Tmf::Agent>().NewPriorityConfirmablePostMessage(kUriServerData);
-    VerifyOrExit(message != nullptr, error = kErrorNoBufs);
-
-    if (aAppendNetDataTlv)
-    {
-        ThreadTlv tlv;
-        tlv.SetType(ThreadTlv::kThreadNetworkData);
-        tlv.SetLength(mLength);
-        SuccessOrExit(error = message->Append(tlv));
-        SuccessOrExit(error = message->AppendBytes(mTlvs, mLength));
-    }
-
-    if (aRloc16 != Mac::kShortAddrInvalid)
-    {
-        SuccessOrExit(error = Tlv::Append<ThreadRloc16Tlv>(*message, aRloc16));
-    }
-
-    IgnoreError(messageInfo.SetSockAddrToRlocPeerAddrToLeaderAloc());
-    SuccessOrExit(error = Get<Tmf::Agent>().SendMessage(*message, messageInfo, aHandler, aContext));
-
-    LogInfo("Sent server data notification");
-
-exit:
-    FreeMessageOnError(message, error);
-    return error;
-}
+void MutableNetworkData::RemoveTlv(NetworkDataTlv *aTlv) { Remove(aTlv, aTlv->GetSize()); }
 
 Error NetworkData::GetNextServer(Iterator &aIterator, uint16_t &aRloc16) const
 {
@@ -764,7 +725,7 @@ Error NetworkData::FindBorderRouters(RoleFilter aRoleFilter, uint16_t aRlocs[], 
 
     private:
         RoleFilter mRoleFilter;
-        uint16_t * mRlocs;
+        uint16_t  *mRlocs;
         uint8_t    mLength;
         uint8_t    mMaxLength;
     };

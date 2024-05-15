@@ -201,9 +201,9 @@ SYSTEM_OBJECTS sysObj;
 * THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS SOFTWARE.
 *******************************************************************************/
 
+OSAL_SEM_HANDLE_TYPE semPhyInternalHandler;
 OSAL_QUEUE_HANDLE_TYPE OTQueue;
 #define OT_TASK_QUEUE_SIZE 8
-OSAL_SEM_HANDLE_TYPE semPhyInternalHandler;
 /*******************************************************************************
 * Copyright (C) 2022 Microchip Technology Inc. and its subsidiaries.
 *
@@ -454,10 +454,6 @@ void SYS_Initialize ( void* data )
     PDS_Init(MAX_PDS_ITEMS_COUNT, MAX_PDS_DIRECTORIES_COUNT);
 
 
-
-    /* Crypto Callback initialize */
-    //CRYPT_WCCB_Initialize();
-
     // Initialize RF System
     SYS_Load_Cal(WSS_ENABLE_ZB);
  
@@ -497,18 +493,19 @@ void SYS_Initialize ( void* data )
         sysObj.sysConsole0 = SYS_CONSOLE_Initialize(SYS_CONSOLE_INDEX_0, (SYS_MODULE_INIT *)&sysConsole0Init);
    /* MISRAC 2012 deviation block end */
 
+    /* Initialization for IEEE_802154_PHY */
+    
+    PHY_Init();
+    
+    /* End of Initialization for IEEE_802154_PHY */
+
+    CRYPT_WCCB_Initialize();
     
     /*Open Thread System Initialization*/
     otSysInit(0U,0U);
     
     /* Creation of openthread Task Queue */
     OSAL_QUEUE_Create(&OTQueue, OT_TASK_QUEUE_SIZE, sizeof(OT_Msg_T));
-
-    /* Initialization for IEEE_802154_PHY */
-    
-    PHY_Init();
-    
-    /* End of Initialization for IEEE_802154_PHY */
 
 
     /* MISRAC 2012 deviation block end */

@@ -216,7 +216,7 @@ Error Mac::ConvertBeaconToActiveScanResult(const RxFrame *aBeaconFrame, ActiveSc
     Address address;
 #if OPENTHREAD_CONFIG_MAC_BEACON_PAYLOAD_PARSING_ENABLE
     const BeaconPayload *beaconPayload = nullptr;
-    const Beacon *       beacon        = nullptr;
+    const Beacon        *beacon        = nullptr;
     uint16_t             payloadLength;
 #endif
 
@@ -578,10 +578,7 @@ exit:
     return;
 }
 
-bool Mac::IsActiveOrPending(Operation aOperation) const
-{
-    return (mOperation == aOperation) || IsPending(aOperation);
-}
+bool Mac::IsActiveOrPending(Operation aOperation) const { return (mOperation == aOperation) || IsPending(aOperation); }
 
 void Mac::StartOperation(Operation aOperation)
 {
@@ -739,7 +736,7 @@ TxFrame *Mac::PrepareBeacon(void)
 {
     TxFrame *frame;
     uint16_t fcf;
-    Beacon * beacon = nullptr;
+    Beacon  *beacon = nullptr;
 #if OPENTHREAD_CONFIG_MAC_OUTGOING_BEACON_PAYLOAD_ENABLE
     uint8_t        beaconLength;
     BeaconPayload *beaconPayload = nullptr;
@@ -827,7 +824,7 @@ bool Mac::IsJoinable(void) const
 
 void Mac::ProcessTransmitSecurity(TxFrame &aFrame)
 {
-    KeyManager &      keyManager = Get<KeyManager>();
+    KeyManager       &keyManager = Get<KeyManager>();
     uint8_t           keyIdMode;
     const ExtAddress *extAddress = nullptr;
 
@@ -915,7 +912,7 @@ exit:
 
 void Mac::BeginTransmit(void)
 {
-    TxFrame * frame    = nullptr;
+    TxFrame  *frame    = nullptr;
     TxFrames &txFrames = mLinks.GetTxFrames();
     Address   dstAddr;
 
@@ -1028,10 +1025,8 @@ void Mac::BeginTransmit(void)
         // copy the frame into correct `TxFrame` for each radio type
         // (if it is not already prepared).
 
-        for (uint8_t index = 0; index < GetArrayLength(RadioTypes::kAllRadioTypes); index++)
+        for (RadioType radio : RadioTypes::kAllRadioTypes)
         {
-            RadioType radio = RadioTypes::kAllRadioTypes[index];
-
             if (txFrames.GetSelectedRadioTypes().Contains(radio))
             {
                 TxFrame &txFrame = txFrames.GetTxFrame(radio);
@@ -1047,10 +1042,8 @@ void Mac::BeginTransmit(void)
         // process security for each radio type separately. This
         // allows radio links to handle security differently, e.g.,
         // with different keys or link frame counters.
-        for (uint8_t index = 0; index < GetArrayLength(RadioTypes::kAllRadioTypes); index++)
+        for (RadioType radio : RadioTypes::kAllRadioTypes)
         {
-            RadioType radio = RadioTypes::kAllRadioTypes[index];
-
             if (txFrames.GetSelectedRadioTypes().Contains(radio))
             {
                 ProcessTransmitSecurity(txFrames.GetTxFrame(radio));
@@ -1490,7 +1483,7 @@ void Mac::HandleTimer(void)
 
 Error Mac::ProcessReceiveSecurity(RxFrame &aFrame, const Address &aSrcAddr, Neighbor *aNeighbor)
 {
-    KeyManager &       keyManager = Get<KeyManager>();
+    KeyManager        &keyManager = Get<KeyManager>();
     Error              error      = kErrorSecurity;
     uint8_t            securityLevel;
     uint8_t            keyIdMode;
@@ -1498,7 +1491,7 @@ Error Mac::ProcessReceiveSecurity(RxFrame &aFrame, const Address &aSrcAddr, Neig
     uint8_t            keyid;
     uint32_t           keySequence = 0;
     const KeyMaterial *macKey;
-    const ExtAddress * extAddress;
+    const ExtAddress  *extAddress;
 
     VerifyOrExit(aFrame.GetSecurityEnabled(), error = kErrorNone);
 
@@ -1633,8 +1626,8 @@ Error Mac::ProcessEnhAckSecurity(TxFrame &aTxFrame, RxFrame &aAckFrame)
     uint32_t           frameCounter;
     Address            srcAddr;
     Address            dstAddr;
-    Neighbor *         neighbor   = nullptr;
-    KeyManager &       keyManager = Get<KeyManager>();
+    Neighbor          *neighbor   = nullptr;
+    KeyManager        &keyManager = Get<KeyManager>();
     const KeyMaterial *macKey;
 
     VerifyOrExit(aAckFrame.GetSecurityEnabled(), error = kErrorNone);
@@ -2118,16 +2111,10 @@ const uint32_t *Mac::GetIndirectRetrySuccessHistogram(uint8_t &aNumberOfEntries)
 }
 #endif
 
-void Mac::ResetRetrySuccessHistogram()
-{
-    memset(&mRetryHistogram, 0, sizeof(mRetryHistogram));
-}
+void Mac::ResetRetrySuccessHistogram() { memset(&mRetryHistogram, 0, sizeof(mRetryHistogram)); }
 #endif // OPENTHREAD_CONFIG_MAC_RETRY_SUCCESS_HISTOGRAM_ENABLE
 
-uint8_t Mac::ComputeLinkMargin(int8_t aRss) const
-{
-    return ot::ComputeLinkMargin(GetNoiseFloor(), aRss);
-}
+uint8_t Mac::ComputeLinkMargin(int8_t aRss) const { return ot::ComputeLinkMargin(GetNoiseFloor(), aRss); }
 
 // LCOV_EXCL_START
 
@@ -2218,24 +2205,15 @@ void Mac::LogFrameTxFailure(const TxFrame &aFrame, Error aError, uint8_t aRetryC
     }
 }
 
-void Mac::LogBeacon(const char *aActionText) const
-{
-    LogInfo("%s Beacon", aActionText);
-}
+void Mac::LogBeacon(const char *aActionText) const { LogInfo("%s Beacon", aActionText); }
 
 #else // #if OT_SHOULD_LOG_AT(OT_LOG_LEVEL_INFO)
 
-void Mac::LogFrameRxFailure(const RxFrame *, Error) const
-{
-}
+void Mac::LogFrameRxFailure(const RxFrame *, Error) const {}
 
-void Mac::LogBeacon(const char *) const
-{
-}
+void Mac::LogBeacon(const char *) const {}
 
-void Mac::LogFrameTxFailure(const TxFrame &, Error, uint8_t, bool) const
-{
-}
+void Mac::LogFrameTxFailure(const TxFrame &, Error, uint8_t, bool) const {}
 
 #endif // #if OT_SHOULD_LOG_AT(OT_LOG_LEVEL_INFO)
 
@@ -2294,15 +2272,9 @@ void Mac::SetCslPeriod(uint16_t aPeriod)
     UpdateCsl();
 }
 
-bool Mac::IsCslEnabled(void) const
-{
-    return !Get<Mle::Mle>().IsRxOnWhenIdle() && IsCslCapable();
-}
+bool Mac::IsCslEnabled(void) const { return !Get<Mle::Mle>().IsRxOnWhenIdle() && IsCslCapable(); }
 
-bool Mac::IsCslCapable(void) const
-{
-    return (GetCslPeriod() > 0) && IsCslSupported();
-}
+bool Mac::IsCslCapable(void) const { return (GetCslPeriod() > 0) && IsCslSupported(); }
 
 bool Mac::IsCslSupported(void) const
 {
@@ -2314,8 +2286,8 @@ bool Mac::IsCslSupported(void) const
 void Mac::ProcessCsl(const RxFrame &aFrame, const Address &aSrcAddr)
 {
     const uint8_t *cur   = aFrame.GetHeaderIe(CslIe::kHeaderIeId);
-    Child *        child = Get<ChildTable>().FindChild(aSrcAddr, Child::kInStateAnyExceptInvalid);
-    const CslIe *  csl;
+    Child         *child = Get<ChildTable>().FindChild(aSrcAddr, Child::kInStateAnyExceptInvalid);
+    const CslIe   *csl;
 
     VerifyOrExit(cur != nullptr && child != nullptr && aFrame.GetSecurityEnabled());
 

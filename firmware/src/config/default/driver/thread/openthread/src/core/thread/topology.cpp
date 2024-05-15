@@ -81,6 +81,7 @@ void Neighbor::Info::SetFrom(const Neighbor &aNeighbor)
     mRxOnWhenIdle     = aNeighbor.IsRxOnWhenIdle();
     mFullThreadDevice = aNeighbor.IsFullThreadDevice();
     mFullNetworkData  = (aNeighbor.GetNetworkDataType() == NetworkData::kFullSet);
+    mVersion          = aNeighbor.GetVersion();
 }
 
 void Neighbor::Init(Instance &aInstance)
@@ -545,10 +546,7 @@ void Router::Clear(void)
     Init(instance);
 }
 
-LinkQuality Router::GetTwoWayLinkQuality(void) const
-{
-    return Min(GetLinkQualityIn(), GetLinkQualityOut());
-}
+LinkQuality Router::GetTwoWayLinkQuality(void) const { return Min(GetLinkQualityIn(), GetLinkQualityOut()); }
 
 void Router::SetFrom(const Parent &aParent)
 {

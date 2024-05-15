@@ -209,7 +209,7 @@ public:
      */
     bool IsClean(void) const
     {
-        Heap &       self  = *AsNonConst(this);
+        Heap        &self  = *AsNonConst(this);
         const Block &super = self.BlockSuper();
         const Block &first = self.BlockRight(super);
         return super.GetNext() == self.BlockOffset(first) && first.GetSize() == kFirstBlockSize;

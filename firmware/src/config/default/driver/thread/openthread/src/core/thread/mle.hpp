@@ -36,6 +36,7 @@
 
 #include "openthread-core-config.h"
 
+#include "common/callback.hpp"
 #include "common/encoding.hpp"
 #include "common/locator.hpp"
 #include "common/log.hpp"
@@ -495,7 +496,7 @@ public:
      * @returns The RLOC16 assigned to the Thread interface.
      *
      */
-    uint16_t GetRloc16(void) const;
+    uint16_t GetRloc16(void) const { return mRloc16; }
 
     /**
      * This method returns a reference to the RLOC assigned to the Thread interface.
@@ -619,7 +620,10 @@ public:
      * @param[in]  aContext  A pointer to application-specific context.
      *
      */
-    void RegisterParentResponseStatsCallback(otThreadParentResponseCallback aCallback, void *aContext);
+    void RegisterParentResponseStatsCallback(otThreadParentResponseCallback aCallback, void *aContext)
+    {
+        mParentResponseCallback.Set(aCallback, aContext);
+    }
 
     /**
      * This method requests MLE layer to prepare and send a shorter version of Child ID Request message by only
@@ -684,7 +688,7 @@ public:
      * @returns CSL metric.
      *
      */
-    uint64_t CalcParentCslMetric(const Mac::CslAccuracy &aCslAccuracy);
+    uint64_t CalcParentCslMetric(const Mac::CslAccuracy &aCslAccuracy) const;
 
 #endif // OPENTHREAD_CONFIG_MAC_CSL_RECEIVER_ENABLE
 
@@ -1383,11 +1387,11 @@ protected:
         {
         }
 
-        RxMessage &             mMessage;      ///< The MLE message.
+        RxMessage              &mMessage;      ///< The MLE message.
         const Ip6::MessageInfo &mMessageInfo;  ///< The `MessageInfo` associated with the message.
         uint32_t                mFrameCounter; ///< The frame counter from aux security header.
         uint32_t                mKeySequence;  ///< The key sequence from aux security header.
-        Neighbor *              mNeighbor;     ///< Neighbor from which message was received (can be `nullptr`).
+        Neighbor               *mNeighbor;     ///< Neighbor from which message was received (can be `nullptr`).
         Class                   mClass;        ///< The message class (authoritative, peer, or unknown).
     };
 
@@ -1467,8 +1471,8 @@ protected:
      * @retval kErrorNoBufs   Insufficient buffers to generate the MLE Data Request message.
      *
      */
-    Error SendDataRequest(const Ip6::Address &                       aDestination,
-                          const uint8_t *                            aTlvs,
+    Error SendDataRequest(const Ip6::Address                        &aDestination,
+                          const uint8_t                             *aTlvs,
                           uint8_t                                    aTlvsLength,
                           uint16_t                                   aDelay,
                           const LinkMetrics::LinkMetrics::QueryInfo &aQueryInfo)
@@ -1905,8 +1909,8 @@ private:
     Error       SendChildUpdateRequest(bool aAppendChallenge, uint32_t aTimeout);
 
 #if OPENTHREAD_CONFIG_MLE_LINK_METRICS_INITIATOR_ENABLE || OPENTHREAD_CONFIG_MLE_LINK_METRICS_SUBJECT_ENABLE
-    Error SendDataRequest(const Ip6::Address &                       aDestination,
-                          const uint8_t *                            aTlvs,
+    Error SendDataRequest(const Ip6::Address                        &aDestination,
+                          const uint8_t                             *aTlvs,
                           uint8_t                                    aTlvsLength,
                           uint16_t                                   aDelay,
                           const LinkMetrics::LinkMetrics::QueryInfo *aQueryInfo = nullptr);
@@ -1915,8 +1919,8 @@ private:
 #endif
 
 #if OPENTHREAD_FTD
-    static void HandleDetachGracefullyAddressReleaseResponse(void *               aContext,
-                                                             otMessage *          aMessage,
+    static void HandleDetachGracefullyAddressReleaseResponse(void                *aContext,
+                                                             otMessage           *aMessage,
                                                              const otMessageInfo *aMessageInfo,
                                                              Error                aResult);
     void        HandleDetachGracefullyAddressReleaseResponse(void);
@@ -1962,16 +1966,16 @@ private:
     bool IsBetterParent(uint16_t                aRloc16,
                         LinkQuality             aLinkQuality,
                         uint8_t                 aLinkMargin,
-                        const ConnectivityTlv & aConnectivityTlv,
+                        const ConnectivityTlv  &aConnectivityTlv,
                         uint16_t                aVersion,
                         const Mac::CslAccuracy &aCslAccuracy);
     bool IsNetworkDataNewer(const LeaderData &aLeaderData);
 
     Error ProcessMessageSecurity(Crypto::AesCcm::Mode    aMode,
-                                 Message &               aMessage,
+                                 Message                &aMessage,
                                  const Ip6::MessageInfo &aMessageInfo,
                                  uint16_t                aCmdOffset,
-                                 const SecurityHeader &  aHeader);
+                                 const SecurityHeader   &aHeader);
 
 #if OPENTHREAD_CONFIG_TMF_NETDATA_SERVICE_ENABLE
     ServiceAloc *FindInServiceAlocs(uint16_t aAloc16);
@@ -2011,6 +2015,7 @@ private:
 
     bool mHasRestored;
     bool mReceivedResponseFromParent;
+    bool mInitiallyAttachedAsSleepy;
 
     Ip6::Udp::Socket mSocket;
     uint32_t         mTimeout;
@@ -2018,6 +2023,7 @@ private:
     uint32_t mCslTimeout;
 #endif
 
+    uint16_t mRloc16;
     uint16_t mPreviousParentRloc;
 
 #if OPENTHREAD_CONFIG_PARENT_SEARCH_ENABLE
@@ -2045,12 +2051,10 @@ private:
     Ip6::Netif::MulticastAddress mLinkLocalAllThreadNodes;
     Ip6::Netif::MulticastAddress mRealmLocalAllThreadNodes;
 
-    DetachGracefullyTimer      mDetachGracefullyTimer;
-    otDetachGracefullyCallback mDetachGracefullyCallback;
-    void *                     mDetachGracefullyContext;
+    DetachGracefullyTimer                mDetachGracefullyTimer;
+    Callback<otDetachGracefullyCallback> mDetachGracefullyCallback;
 
-    otThreadParentResponseCallback mParentResponseCb;
-    void *                         mParentResponseCbContext;
+    Callback<otThreadParentResponseCallback> mParentResponseCallback;
 };
 
 } // namespace Mle

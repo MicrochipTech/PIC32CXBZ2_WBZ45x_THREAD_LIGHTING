@@ -465,7 +465,7 @@ protected:
      * @returns A pointer to the next matching Service TLV if one is found or `nullptr` if it cannot be found.
      *
      */
-    const ServiceTlv *FindNextService(const ServiceTlv * aPrevServiceTlv,
+    const ServiceTlv *FindNextService(const ServiceTlv  *aPrevServiceTlv,
                                       uint32_t           aEnterpriseNumber,
                                       const ServiceData &aServiceData,
                                       ServiceMatchMode   aServiceMatchMode) const;
@@ -484,26 +484,9 @@ protected:
      * @returns A pointer to the next matching Thread Service TLV if one is found or `nullptr` if it cannot be found.
      *
      */
-    const ServiceTlv *FindNextThreadService(const ServiceTlv * aPrevServiceTlv,
+    const ServiceTlv *FindNextThreadService(const ServiceTlv  *aPrevServiceTlv,
                                             const ServiceData &aServiceData,
                                             ServiceMatchMode   aServiceMatchMode) const;
-
-    /**
-     * This method sends a Server Data Notification message to the Leader.
-     *
-     * @param[in]  aRloc16            The old RLOC16 value that was previously registered.
-     * @param[in]  aAppendNetDataTlv  Indicates whether or not to append Thread Network Data TLV to the message.
-     * @param[in]  aHandler           A function pointer that is called when the transaction ends.
-     * @param[in]  aContext           A pointer to arbitrary context information.
-     *
-     * @retval kErrorNone     Successfully enqueued the notification message.
-     * @retval kErrorNoBufs   Insufficient message buffers to generate the notification message.
-     *
-     */
-    Error SendServerDataNotification(uint16_t              aRloc16,
-                                     bool                  aAppendNetDataTlv,
-                                     Coap::ResponseHandler aHandler,
-                                     void *                aContext) const;
 
 private:
     class NetworkDataIterator
@@ -571,14 +554,14 @@ private:
 
     struct Config
     {
-        OnMeshPrefixConfig * mOnMeshPrefix;
+        OnMeshPrefixConfig  *mOnMeshPrefix;
         ExternalRouteConfig *mExternalRoute;
-        ServiceConfig *      mService;
+        ServiceConfig       *mService;
     };
 
     Error Iterate(Iterator &aIterator, uint16_t aRloc16, Config &aConfig) const;
 
-    static bool MatchService(const ServiceTlv & aServiceTlv,
+    static bool MatchService(const ServiceTlv  &aServiceTlv,
                              uint32_t           aEnterpriseNumber,
                              const ServiceData &aServiceData,
                              ServiceMatchMode   aServiceMatchMode);

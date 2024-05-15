@@ -187,10 +187,10 @@ public:
 protected:
     struct Metadata
     {
-        Message *    mNext;        // Next message in a doubly linked list.
-        Message *    mPrev;        // Previous message in a doubly linked list.
+        Message     *mNext;        // Next message in a doubly linked list.
+        Message     *mPrev;        // Previous message in a doubly linked list.
         MessagePool *mMessagePool; // Message pool for this message.
-        void *       mQueue;       // The queue where message is queued (if any). Queue type from `mInPriorityQ`.
+        void        *mQueue;       // The queue where message is queued (if any). Queue type from `mInPriorityQ`.
         uint32_t     mDatagramTag; // The datagram tag used for 6LoWPAN frags or IPv6fragmentation.
         TimeMilli    mTimestamp;   // The message timestamp.
         uint16_t     mReserved;    // Number of reserved bytes (for header).
@@ -232,13 +232,13 @@ protected:
     static constexpr uint16_t kBufferDataSize     = kBufferSize - sizeof(otMessageBuffer);
     static constexpr uint16_t kHeadBufferDataSize = kBufferDataSize - sizeof(Metadata);
 
-    Metadata &      GetMetadata(void) { return mBuffer.mHead.mMetadata; }
+    Metadata       &GetMetadata(void) { return mBuffer.mHead.mMetadata; }
     const Metadata &GetMetadata(void) const { return mBuffer.mHead.mMetadata; }
 
-    uint8_t *      GetFirstData(void) { return mBuffer.mHead.mData; }
+    uint8_t       *GetFirstData(void) { return mBuffer.mHead.mData; }
     const uint8_t *GetFirstData(void) const { return mBuffer.mHead.mData; }
 
-    uint8_t *      GetData(void) { return mBuffer.mData; }
+    uint8_t       *GetData(void) { return mBuffer.mData; }
     const uint8_t *GetData(void) const { return mBuffer.mData; }
 
 private:
@@ -1373,11 +1373,11 @@ private:
     void SetMessageQueue(MessageQueue *aMessageQueue);
     void SetPriorityQueue(PriorityQueue *aPriorityQueue);
 
-    Message *&      Next(void) { return GetMetadata().mNext; }
+    Message       *&Next(void) { return GetMetadata().mNext; }
     Message *const &Next(void) const { return GetMetadata().mNext; }
-    Message *&      Prev(void) { return GetMetadata().mPrev; }
+    Message       *&Prev(void) { return GetMetadata().mPrev; }
 
-    static Message *      NextOf(Message *aMessage) { return (aMessage != nullptr) ? aMessage->Next() : nullptr; }
+    static Message       *NextOf(Message *aMessage) { return (aMessage != nullptr) ? aMessage->Next() : nullptr; }
     static const Message *NextOf(const Message *aMessage) { return (aMessage != nullptr) ? aMessage->Next() : nullptr; }
 
     Error ResizeMessage(uint16_t aLength);
@@ -1492,7 +1492,7 @@ public:
     Message::ConstIterator end(void) const { return Message::ConstIterator(); }
 
 private:
-    Message *      GetTail(void) { return static_cast<Message *>(mData); }
+    Message       *GetTail(void) { return static_cast<Message *>(mData); }
     const Message *GetTail(void) const { return static_cast<const Message *>(mData); }
     void           SetTail(Message *aMessage) { mData = aMessage; }
 };
@@ -1710,10 +1710,7 @@ private:
 #endif
 };
 
-inline Instance &Message::GetInstance(void) const
-{
-    return GetMessagePool()->GetInstance();
-}
+inline Instance &Message::GetInstance(void) const { return GetMessagePool()->GetInstance(); }
 
 /**
  * @}

@@ -584,7 +584,7 @@ public:
      */
     bool IsEnhancedKeepAliveSupported(void) const
     {
-        return mState != kStateInvalid && mVersion >= OT_THREAD_VERSION_1_2;
+        return (mState != kStateInvalid) && (mVersion >= kThreadVersion1p2);
     }
 
     /**
@@ -979,7 +979,7 @@ public:
          * @returns A reference to the `Ip6::Address` entry currently pointed by the iterator.
          *
          */
-        const Ip6::Address &operator*(void)const { return *GetAddress(); }
+        const Ip6::Address &operator*(void) const { return *GetAddress(); }
 
         /**
          * This method overloads operator `==` to evaluate whether or not two `Iterator` instances are equal.
@@ -1010,7 +1010,7 @@ public:
 
         void Update(void);
 
-        const Child &            mChild;
+        const Child             &mChild;
         Ip6::Address::TypeFilter mFilter;
         Index                    mIndex;
         Ip6::Address             mMeshLocalAddress;
@@ -1310,7 +1310,7 @@ private:
         AddressIterator end(void) { return AddressIterator(mChild, AddressIterator::kEndIterator); }
 
     private:
-        const Child &            mChild;
+        const Child             &mChild;
         Ip6::Address::TypeFilter mFilter;
     };
 

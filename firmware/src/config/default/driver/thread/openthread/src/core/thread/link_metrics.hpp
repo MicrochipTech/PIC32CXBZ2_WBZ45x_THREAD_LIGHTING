@@ -46,6 +46,7 @@
 #include <openthread/link.h>
 
 #include "common/as_core_type.hpp"
+#include "common/callback.hpp"
 #include "common/clearable.hpp"
 #include "common/locator.hpp"
 #include "common/message.hpp"
@@ -120,6 +121,7 @@ public:
      */
     Error Query(const Ip6::Address &aDestination, uint8_t aSeriesId, const Metrics *aMetrics);
 
+#if OPENTHREAD_CONFIG_MLE_LINK_METRICS_INITIATOR_ENABLE
     /**
      * This method sends an MLE Link Metrics Management Request to configure/clear a Forward Tracking Series.
      *
@@ -136,10 +138,9 @@ public:
      */
     Error SendMgmtRequestForwardTrackingSeries(const Ip6::Address &aDestination,
                                                uint8_t             aSeriesId,
-                                               const SeriesFlags & aSeriesFlags,
-                                               const Metrics *     aMetrics);
+                                               const SeriesFlags  &aSeriesFlags,
+                                               const Metrics      *aMetrics);
 
-#if OPENTHREAD_CONFIG_MLE_LINK_METRICS_INITIATOR_ENABLE
     /**
      * This method sends an MLE Link Metrics Management Request to configure/clear a Enhanced-ACK Based Probing.
      *
@@ -157,7 +158,7 @@ public:
      */
     Error SendMgmtRequestEnhAckProbing(const Ip6::Address &aDestination,
                                        EnhAckFlags         aEnhAckFlags,
-                                       const Metrics *     aMetrics);
+                                       const Metrics      *aMetrics);
 
     /**
      * This method sends an MLE Link Probe message.
@@ -245,7 +246,7 @@ public:
      * @param[in]  aContext   A pointer to application-specific context.
      *
      */
-    void SetReportCallback(ReportCallback aCallback, void *aContext);
+    void SetReportCallback(ReportCallback aCallback, void *aContext) { mReportCallback.Set(aCallback, aContext); }
 
     /**
      * This method registers a callback to handle Link Metrics Management Response received.
@@ -254,7 +255,10 @@ public:
      * @param[in]  aContext  A pointer to application-specific context.
      *
      */
-    void SetMgmtResponseCallback(MgmtResponseCallback aCallback, void *aContext);
+    void SetMgmtResponseCallback(MgmtResponseCallback aCallback, void *aContext)
+    {
+        mMgmtResponseCallback.Set(aCallback, aContext);
+    }
 
     /**
      * This method registers a callback to handle Link Metrics when Enh-ACK Probing IE is received.
@@ -263,7 +267,10 @@ public:
      * @param[in]  aContext  A pointer to application-specific context.
      *
      */
-    void SetEnhAckProbingCallback(EnhAckProbingIeReportCallback aCallback, void *aContext);
+    void SetEnhAckProbingCallback(EnhAckProbingIeReportCallback aCallback, void *aContext)
+    {
+        mEnhAckProbingIeReportCallback.Set(aCallback, aContext);
+    }
 
     /**
      * This method processes received Enh-ACK Probing IE data.
@@ -303,7 +310,7 @@ private:
     Status ConfigureForwardTrackingSeries(uint8_t        aSeriesId,
                                           uint8_t        aSeriesFlags,
                                           const Metrics &aMetrics,
-                                          Neighbor &     aNeighbor);
+                                          Neighbor      &aNeighbor);
 
     Status ConfigureEnhAckProbing(EnhAckFlags aEnhAckFlags, const Metrics &aMetrics, Neighbor &aNeighbor);
 
@@ -312,7 +319,7 @@ private:
     static Error ReadTypeIdsFromMessage(const Message &aMessage,
                                         uint16_t       aStartOffset,
                                         uint16_t       aEndOffset,
-                                        Metrics &      aMetrics);
+                                        Metrics       &aMetrics);
     static Error AppendReportSubTlvToMessage(Message &aMessage, const MetricsValues &aValues);
 
     static uint8_t ScaleLinkMarginToRawValue(uint8_t aLinkMargin);
@@ -320,12 +327,9 @@ private:
     static uint8_t ScaleRssiToRawValue(int8_t aRssi);
     static int8_t  ScaleRawValueToRssi(uint8_t aRawValue);
 
-    ReportCallback                mReportCallback;
-    void *                        mReportCallbackContext;
-    MgmtResponseCallback          mMgmtResponseCallback;
-    void *                        mMgmtResponseCallbackContext;
-    EnhAckProbingIeReportCallback mEnhAckProbingIeReportCallback;
-    void *                        mEnhAckProbingIeReportCallbackContext;
+    Callback<ReportCallback>                mReportCallback;
+    Callback<MgmtResponseCallback>          mMgmtResponseCallback;
+    Callback<EnhAckProbingIeReportCallback> mEnhAckProbingIeReportCallback;
 
     Pool<SeriesInfo, kMaxSeriesSupported> mSeriesInfoPool;
 };

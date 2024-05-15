@@ -160,7 +160,7 @@ public:
         void HandleSentFrameToChild(const Mac::TxFrame &aFrame,
                                     const FrameContext &aContext,
                                     Error               aError,
-                                    Child &             aChild);
+                                    Child              &aChild);
     };
     /**
      * This constructor initializes the CSL tx scheduler object.
@@ -187,10 +187,13 @@ public:
     void Clear(void);
 
 private:
+    // Guard time in usec to add when checking delay while preparaing the CSL frame for tx.
+    static constexpr uint32_t kFramePreparationGuardInterval = 1500;
+
     void InitFrameRequestAhead(void);
     void RescheduleCslTx(void);
 
-    uint32_t GetNextCslTransmissionDelay(const Child &aChild, uint32_t &aDelayFromLastRx) const;
+    uint32_t GetNextCslTransmissionDelay(const Child &aChild, uint32_t &aDelayFromLastRx, uint32_t aAheadUs) const;
 
     // Callbacks from `Mac`
     Mac::TxFrame *HandleFrameRequest(Mac::TxFrames &aTxFrames);
@@ -199,8 +202,8 @@ private:
     void HandleSentFrame(const Mac::TxFrame &aFrame, Error aError, Child &aChild);
 
     uint32_t                mCslFrameRequestAheadUs;
-    Child *                 mCslTxChild;
-    Message *               mCslTxMessage;
+    Child                  *mCslTxChild;
+    Message                *mCslTxMessage;
     Callbacks::FrameContext mFrameContext;
     Callbacks               mCallbacks;
 };

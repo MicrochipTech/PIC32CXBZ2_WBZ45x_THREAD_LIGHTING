@@ -40,6 +40,7 @@
 
 #include <openthread/backbone_router_ftd.h>
 
+#include "common/callback.hpp"
 #include "common/non_copyable.hpp"
 #include "common/notifier.hpp"
 #include "common/time.hpp"
@@ -108,8 +109,6 @@ public:
     explicit MulticastListenersTable(Instance &aInstance)
         : InstanceLocator(aInstance)
         , mNumValidListeners(0)
-        , mCallback(nullptr)
-        , mCallbackContext(nullptr)
     {
     }
 
@@ -186,7 +185,7 @@ public:
      *
      */
     Error GetNext(otBackboneRouterMulticastListenerIterator &aIterator,
-                  otBackboneRouterMulticastListenerInfo &    aListenerInfo);
+                  otBackboneRouterMulticastListenerInfo     &aListenerInfo);
 
 private:
     static constexpr uint16_t kMulticastListenersTableSize = OPENTHREAD_CONFIG_MAX_MULTICAST_LISTENERS;
@@ -207,7 +206,7 @@ private:
         Listener *end(void);
     };
 
-    void LogMulticastListenersTable(const char *        aAction,
+    void LogMulticastListenersTable(const char         *aAction,
                                     const Ip6::Address &aAddress,
                                     TimeMilli           aExpireTime,
                                     Error               aError);
@@ -220,8 +219,7 @@ private:
     Listener mListeners[kMulticastListenersTableSize];
     uint16_t mNumValidListeners;
 
-    otBackboneRouterMulticastListenerCallback mCallback;
-    void *                                    mCallbackContext;
+    Callback<otBackboneRouterMulticastListenerCallback> mCallback;
 };
 
 } // namespace BackboneRouter

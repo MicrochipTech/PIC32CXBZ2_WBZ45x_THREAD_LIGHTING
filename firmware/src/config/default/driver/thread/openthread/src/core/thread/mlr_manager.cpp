@@ -51,10 +51,6 @@ RegisterLogModule("MlrManager");
 
 MlrManager::MlrManager(Instance &aInstance)
     : InstanceLocator(aInstance)
-#if (OPENTHREAD_FTD && OPENTHREAD_CONFIG_TMF_PROXY_MLR_ENABLE) && OPENTHREAD_CONFIG_COMMISSIONER_ENABLE
-    , mRegisterMulticastListenersCallback(nullptr)
-    , mRegisterMulticastListenersContext(nullptr)
-#endif
     , mReregistrationDelay(0)
     , mSendDelay(0)
     , mMlrPending(false)
@@ -150,7 +146,7 @@ exit:
     return ret;
 }
 
-void MlrManager::UpdateProxiedSubscriptions(Child &             aChild,
+void MlrManager::UpdateProxiedSubscriptions(Child              &aChild,
                                             const Ip6::Address *aOldMlrRegisteredAddresses,
                                             uint16_t            aOldMlrRegisteredAddressNum)
 {
@@ -317,11 +313,11 @@ exit:
 }
 
 #if (OPENTHREAD_FTD && OPENTHREAD_CONFIG_TMF_PROXY_MLR_ENABLE) && OPENTHREAD_CONFIG_COMMISSIONER_ENABLE
-Error MlrManager::RegisterMulticastListeners(const otIp6Address *                    aAddresses,
+Error MlrManager::RegisterMulticastListeners(const otIp6Address                     *aAddresses,
                                              uint8_t                                 aAddressNum,
-                                             const uint32_t *                        aTimeout,
+                                             const uint32_t                         *aTimeout,
                                              otIp6RegisterMulticastListenersCallback aCallback,
-                                             void *                                  aContext)
+                                             void                                   *aContext)
 {
     Error error;
 
@@ -343,16 +339,15 @@ Error MlrManager::RegisterMulticastListeners(const otIp6Address *               
     SuccessOrExit(error = SendMulticastListenerRegistrationMessage(
                       aAddresses, aAddressNum, aTimeout, &MlrManager::HandleRegisterMulticastListenersResponse, this));
 
-    mRegisterMulticastListenersPending  = true;
-    mRegisterMulticastListenersCallback = aCallback;
-    mRegisterMulticastListenersContext  = aContext;
+    mRegisterMulticastListenersPending = true;
+    mRegisterMulticastListenersCallback.Set(aCallback, aContext);
 
 exit:
     return error;
 }
 
-void MlrManager::HandleRegisterMulticastListenersResponse(void *               aContext,
-                                                          otMessage *          aMessage,
+void MlrManager::HandleRegisterMulticastListenersResponse(void                *aContext,
+                                                          otMessage           *aMessage,
                                                           const otMessageInfo *aMessageInfo,
                                                           Error                aResult)
 {
@@ -360,45 +355,40 @@ void MlrManager::HandleRegisterMulticastListenersResponse(void *               a
                                                                                   AsCoreTypePtr(aMessageInfo), aResult);
 }
 
-void MlrManager::HandleRegisterMulticastListenersResponse(otMessage *          aMessage,
+void MlrManager::HandleRegisterMulticastListenersResponse(otMessage           *aMessage,
                                                           const otMessageInfo *aMessageInfo,
                                                           Error                aResult)
 {
     OT_UNUSED_VARIABLE(aMessageInfo);
 
-    uint8_t                                 status;
-    Error                                   error;
-    Ip6::Address                            failedAddresses[Ip6AddressesTlv::kMaxAddresses];
-    uint8_t                                 failedAddressNum = 0;
-    otIp6RegisterMulticastListenersCallback callback         = mRegisterMulticastListenersCallback;
-    void *                                  context          = mRegisterMulticastListenersContext;
+    uint8_t                                           status;
+    Error                                             error;
+    Ip6::Address                                      failedAddresses[Ip6AddressesTlv::kMaxAddresses];
+    uint8_t                                           failedAddressNum = 0;
+    Callback<otIp6RegisterMulticastListenersCallback> callbackCopy     = mRegisterMulticastListenersCallback;
 
-    mRegisterMulticastListenersPending  = false;
-    mRegisterMulticastListenersCallback = nullptr;
-    mRegisterMulticastListenersContext  = nullptr;
+    mRegisterMulticastListenersPending = false;
+    mRegisterMulticastListenersCallback.Clear();
 
     error = ParseMulticastListenerRegistrationResponse(aResult, AsCoapMessagePtr(aMessage), status, failedAddresses,
                                                        failedAddressNum);
 
-    if (callback != nullptr)
-    {
-        callback(context, error, status, failedAddresses, failedAddressNum);
-    }
+    callbackCopy.InvokeIfSet(error, status, failedAddresses, failedAddressNum);
 }
 
 #endif // (OPENTHREAD_FTD && OPENTHREAD_CONFIG_TMF_PROXY_MLR_ENABLE) && OPENTHREAD_CONFIG_COMMISSIONER_ENABLE
 
-Error MlrManager::SendMulticastListenerRegistrationMessage(const otIp6Address *  aAddresses,
+Error MlrManager::SendMulticastListenerRegistrationMessage(const otIp6Address   *aAddresses,
                                                            uint8_t               aAddressNum,
-                                                           const uint32_t *      aTimeout,
+                                                           const uint32_t       *aTimeout,
                                                            Coap::ResponseHandler aResponseHandler,
-                                                           void *                aResponseContext)
+                                                           void                 *aResponseContext)
 {
     OT_UNUSED_VARIABLE(aTimeout);
 
     Error            error   = kErrorNone;
-    Mle::MleRouter & mle     = Get<Mle::MleRouter>();
-    Coap::Message *  message = nullptr;
+    Mle::MleRouter  &mle     = Get<Mle::MleRouter>();
+    Coap::Message   *message = nullptr;
     Tmf::MessageInfo messageInfo(GetInstance());
     Ip6AddressesTlv  addressesTlv;
 
@@ -452,8 +442,8 @@ exit:
     return error;
 }
 
-void MlrManager::HandleMulticastListenerRegistrationResponse(void *               aContext,
-                                                             otMessage *          aMessage,
+void MlrManager::HandleMulticastListenerRegistrationResponse(void                *aContext,
+                                                             otMessage           *aMessage,
                                                              const otMessageInfo *aMessageInfo,
                                                              Error                aResult)
 {
@@ -461,7 +451,7 @@ void MlrManager::HandleMulticastListenerRegistrationResponse(void *             
         AsCoapMessagePtr(aMessage), AsCoreTypePtr(aMessageInfo), aResult);
 }
 
-void MlrManager::HandleMulticastListenerRegistrationResponse(Coap::Message *         aMessage,
+void MlrManager::HandleMulticastListenerRegistrationResponse(Coap::Message          *aMessage,
                                                              const Ip6::MessageInfo *aMessageInfo,
                                                              Error                   aResult)
 {
@@ -502,9 +492,9 @@ void MlrManager::HandleMulticastListenerRegistrationResponse(Coap::Message *    
 
 Error MlrManager::ParseMulticastListenerRegistrationResponse(Error          aResult,
                                                              Coap::Message *aMessage,
-                                                             uint8_t &      aStatus,
-                                                             Ip6::Address * aFailedAddresses,
-                                                             uint8_t &      aFailedAddressNum)
+                                                             uint8_t       &aStatus,
+                                                             Ip6::Address  *aFailedAddresses,
+                                                             uint8_t       &aFailedAddressNum)
 {
     Error    error;
     uint16_t addressesOffset, addressesLength;
@@ -702,7 +692,7 @@ void MlrManager::LogMulticastAddresses(void)
 }
 
 void MlrManager::AppendToUniqueAddressList(Ip6::Address (&aAddresses)[Ip6AddressesTlv::kMaxAddresses],
-                                           uint8_t &           aAddressNum,
+                                           uint8_t            &aAddressNum,
                                            const Ip6::Address &aAddress)
 {
 #if OPENTHREAD_FTD && OPENTHREAD_CONFIG_TMF_PROXY_MLR_ENABLE

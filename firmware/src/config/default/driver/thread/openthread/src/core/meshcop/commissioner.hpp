@@ -42,6 +42,7 @@
 
 #include "coap/coap_secure.hpp"
 #include "common/as_core_type.hpp"
+#include "common/callback.hpp"
 #include "common/clearable.hpp"
 #include "common/locator.hpp"
 #include "common/log.hpp"
@@ -537,7 +538,7 @@ private:
 
     Error AddJoiner(const Mac::ExtAddress *aEui64,
                     const JoinerDiscerner *aDiscerner,
-                    const char *           aPskd,
+                    const char            *aPskd,
                     uint32_t               aTimeout);
     Error RemoveJoiner(const Mac::ExtAddress *aEui64, const JoinerDiscerner *aDiscerner, uint32_t aDelay);
     void  RemoveJoiner(Joiner &aJoiner, uint32_t aDelay);
@@ -547,27 +548,27 @@ private:
 
     void UpdateJoinerExpirationTimer(void);
 
-    static void HandleMgmtCommissionerSetResponse(void *               aContext,
-                                                  otMessage *          aMessage,
+    static void HandleMgmtCommissionerSetResponse(void                *aContext,
+                                                  otMessage           *aMessage,
                                                   const otMessageInfo *aMessageInfo,
                                                   Error                aResult);
-    void        HandleMgmtCommissionerSetResponse(Coap::Message *         aMessage,
+    void        HandleMgmtCommissionerSetResponse(Coap::Message          *aMessage,
                                                   const Ip6::MessageInfo *aMessageInfo,
                                                   Error                   aResult);
-    static void HandleMgmtCommissionerGetResponse(void *               aContext,
-                                                  otMessage *          aMessage,
+    static void HandleMgmtCommissionerGetResponse(void                *aContext,
+                                                  otMessage           *aMessage,
                                                   const otMessageInfo *aMessageInfo,
                                                   Error                aResult);
-    void        HandleMgmtCommissionerGetResponse(Coap::Message *         aMessage,
+    void        HandleMgmtCommissionerGetResponse(Coap::Message          *aMessage,
                                                   const Ip6::MessageInfo *aMessageInfo,
                                                   Error                   aResult);
-    static void HandleLeaderPetitionResponse(void *               aContext,
-                                             otMessage *          aMessage,
+    static void HandleLeaderPetitionResponse(void                *aContext,
+                                             otMessage           *aMessage,
                                              const otMessageInfo *aMessageInfo,
                                              Error                aResult);
     void HandleLeaderPetitionResponse(Coap::Message *aMessage, const Ip6::MessageInfo *aMessageInfo, Error aResult);
-    static void HandleLeaderKeepAliveResponse(void *               aContext,
-                                              otMessage *          aMessage,
+    static void HandleLeaderKeepAliveResponse(void                *aContext,
+                                              otMessage           *aMessage,
                                               const otMessageInfo *aMessageInfo,
                                               Error                aResult);
     void HandleLeaderKeepAliveResponse(Coap::Message *aMessage, const Ip6::MessageInfo *aMessageInfo, Error aResult);
@@ -601,7 +602,7 @@ private:
 
     Joiner mJoiners[OPENTHREAD_CONFIG_COMMISSIONER_MAX_JOINER_ENTRIES];
 
-    Joiner *                 mActiveJoiner;
+    Joiner                  *mActiveJoiner;
     Ip6::InterfaceIdentifier mJoinerIid;
     uint16_t                 mJoinerPort;
     uint16_t                 mJoinerRloc;
@@ -621,9 +622,8 @@ private:
 
     State mState;
 
-    StateCallback  mStateCallback;
-    JoinerCallback mJoinerCallback;
-    void *         mCallbackContext;
+    Callback<StateCallback>  mStateCallback;
+    Callback<JoinerCallback> mJoinerCallback;
 };
 
 DeclareTmfHandler(Commissioner, kUriDatasetChanged);

@@ -39,6 +39,25 @@
 namespace ot {
 namespace NetworkData {
 
+const char *RoutePreferenceToString(RoutePreference aPreference)
+{
+    const char *str = "low";
+
+    switch (aPreference)
+    {
+    case kRoutePreferenceHigh:
+        str = "high";
+        break;
+    case kRoutePreferenceMedium:
+        str = "med";
+        break;
+    case kRoutePreferenceLow:
+        break;
+    }
+
+    return str;
+}
+
 #if OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
 
 static bool IsPrefixValid(Instance &aInstance, const Ip6::Prefix &aPrefix)
@@ -131,8 +150,8 @@ uint16_t OnMeshPrefixConfig::ConvertToTlvFlags(void) const
 
 #endif // OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
 
-void OnMeshPrefixConfig::SetFrom(const PrefixTlv &        aPrefixTlv,
-                                 const BorderRouterTlv &  aBorderRouterTlv,
+void OnMeshPrefixConfig::SetFrom(const PrefixTlv         &aPrefixTlv,
+                                 const BorderRouterTlv   &aBorderRouterTlv,
                                  const BorderRouterEntry &aBorderRouterEntry)
 {
     Clear();
@@ -191,9 +210,9 @@ uint8_t ExternalRouteConfig::ConvertToTlvFlags(void) const
 
 #endif // OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
 
-void ExternalRouteConfig::SetFrom(Instance &           aInstance,
-                                  const PrefixTlv &    aPrefixTlv,
-                                  const HasRouteTlv &  aHasRouteTlv,
+void ExternalRouteConfig::SetFrom(Instance            &aInstance,
+                                  const PrefixTlv     &aPrefixTlv,
+                                  const HasRouteTlv   &aHasRouteTlv,
                                   const HasRouteEntry &aHasRouteEntry)
 {
     Clear();

@@ -1241,10 +1241,7 @@ DefineMapEnum(otCoapCode, Coap::Code);
  * @returns A reference to `Coap::Message` matching @p aMessage.
  *
  */
-inline Coap::Message &AsCoapMessage(otMessage *aMessage)
-{
-    return *static_cast<Coap::Message *>(aMessage);
-}
+inline Coap::Message &AsCoapMessage(otMessage *aMessage) { return *static_cast<Coap::Message *>(aMessage); }
 
 /**
  * This method casts an `otMessage` pointer to a `Coap::Message` reference.
@@ -1254,10 +1251,7 @@ inline Coap::Message &AsCoapMessage(otMessage *aMessage)
  * @returns A reference to `Coap::Message` matching @p aMessage.
  *
  */
-inline Coap::Message *AsCoapMessagePtr(otMessage *aMessage)
-{
-    return static_cast<Coap::Message *>(aMessage);
-}
+inline Coap::Message *AsCoapMessagePtr(otMessage *aMessage) { return static_cast<Coap::Message *>(aMessage); }
 
 /**
  * This method casts an `otMessage` pointer to a `Coap::Message` pointer.

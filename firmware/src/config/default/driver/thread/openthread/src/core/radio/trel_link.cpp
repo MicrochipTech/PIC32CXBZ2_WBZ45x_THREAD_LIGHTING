@@ -70,10 +70,7 @@ Link::Link(Instance &aInstance)
     mTimer.Start(kAckWaitWindow);
 }
 
-void Link::AfterInit(void)
-{
-    mInterface.Init();
-}
+void Link::AfterInit(void) { mInterface.Init(); }
 
 void Link::Enable(void)
 {
@@ -116,10 +113,7 @@ void Link::Send(void)
     mTxTasklet.Post();
 }
 
-void Link::HandleTxTasklet(void)
-{
-    BeginTransmit();
-}
+void Link::HandleTxTasklet(void) { BeginTransmit(); }
 
 void Link::BeginTransmit(void)
 {
@@ -127,7 +121,7 @@ void Link::BeginTransmit(void)
     Mac::PanId    destPanId;
     Header::Type  type;
     Packet        txPacket;
-    Neighbor *    neighbor   = nullptr;
+    Neighbor     *neighbor   = nullptr;
     Mac::RxFrame *ackFrame   = nullptr;
     bool          isDisovery = false;
 
@@ -271,7 +265,7 @@ void Link::HandleTimer(void)
         HandleTimer(child);
     }
 
-    for (Router &router : Get<RouterTable>().Iterate())
+    for (Router &router : Get<RouterTable>())
     {
         HandleTimer(router);
     }
@@ -391,7 +385,7 @@ void Link::HandleAck(Packet &aAckPacket)
 {
     Error        ackError;
     Mac::Address srcAddress;
-    Neighbor *   neighbor;
+    Neighbor    *neighbor;
     uint32_t     ackNumber;
 
     LogDebg("HandleAck() [%s]", aAckPacket.GetHeader().ToString().AsCString());

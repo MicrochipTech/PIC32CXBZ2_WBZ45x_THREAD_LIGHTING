@@ -90,7 +90,7 @@ Error AddressResolver::GetNextCacheEntry(EntryInfo &aInfo, Iterator &aIterator) 
 {
     Error                 error = kErrorNone;
     const CacheEntryList *list  = aIterator.GetList();
-    const CacheEntry *    entry = aIterator.GetEntry();
+    const CacheEntry     *entry = aIterator.GetEntry();
 
     while (entry == nullptr)
     {
@@ -168,10 +168,7 @@ void AddressResolver::Remove(uint8_t aRouterId)
     Remove(Mle::Rloc16FromRouterId(aRouterId), /* aMatchRouterId */ true);
 }
 
-void AddressResolver::Remove(uint16_t aRloc16)
-{
-    Remove(aRloc16, /* aMatchRouterId */ false);
-}
+void AddressResolver::Remove(uint16_t aRloc16) { Remove(aRloc16, /* aMatchRouterId */ false); }
 
 AddressResolver::CacheEntry *AddressResolver::GetEntryAfter(CacheEntry *aPrev, CacheEntryList &aList)
 {
@@ -207,10 +204,10 @@ void AddressResolver::Remove(Mac::ShortAddress aRloc16, bool aMatchRouterId)
 }
 
 AddressResolver::CacheEntry *AddressResolver::FindCacheEntry(const Ip6::Address &aEid,
-                                                             CacheEntryList *&   aList,
-                                                             CacheEntry *&       aPrevEntry)
+                                                             CacheEntryList    *&aList,
+                                                             CacheEntry        *&aPrevEntry)
 {
-    CacheEntry *    entry   = nullptr;
+    CacheEntry     *entry   = nullptr;
     CacheEntryList *lists[] = {&mCachedList, &mSnoopedList, &mQueryList, &mQueryRetryList};
 
     for (CacheEntryList *list : lists)
@@ -224,15 +221,12 @@ exit:
     return entry;
 }
 
-void AddressResolver::Remove(const Ip6::Address &aEid)
-{
-    Remove(aEid, kReasonRemovingEid);
-}
+void AddressResolver::Remove(const Ip6::Address &aEid) { Remove(aEid, kReasonRemovingEid); }
 
 void AddressResolver::Remove(const Ip6::Address &aEid, Reason aReason)
 {
-    CacheEntry *    entry;
-    CacheEntry *    prev;
+    CacheEntry     *entry;
+    CacheEntry     *prev;
     CacheEntryList *list;
 
     entry = FindCacheEntry(aEid, list, prev);
@@ -247,8 +241,8 @@ exit:
 
 AddressResolver::CacheEntry *AddressResolver::NewCacheEntry(bool aSnoopedEntry)
 {
-    CacheEntry *    newEntry  = nullptr;
-    CacheEntry *    prevEntry = nullptr;
+    CacheEntry     *newEntry  = nullptr;
+    CacheEntry     *prevEntry = nullptr;
     CacheEntryList *lists[]   = {&mSnoopedList, &mQueryRetryList, &mQueryList, &mCachedList};
 
     // The following order is used when trying to allocate a new cache
@@ -311,9 +305,9 @@ exit:
     return newEntry;
 }
 
-void AddressResolver::RemoveCacheEntry(CacheEntry &    aEntry,
+void AddressResolver::RemoveCacheEntry(CacheEntry     &aEntry,
                                        CacheEntryList &aList,
-                                       CacheEntry *    aPrevEntry,
+                                       CacheEntry     *aPrevEntry,
                                        Reason          aReason)
 {
     aList.PopAfter(aPrevEntry);
@@ -334,8 +328,8 @@ Error AddressResolver::UpdateCacheEntry(const Ip6::Address &aEid, Mac::ShortAddr
 
     Error           error = kErrorNone;
     CacheEntryList *list;
-    CacheEntry *    entry;
-    CacheEntry *    prev;
+    CacheEntry     *entry;
+    CacheEntry     *prev;
 
     entry = FindCacheEntry(aEid, list, prev);
     VerifyOrExit(entry != nullptr, error = kErrorNotFound);
@@ -371,7 +365,7 @@ void AddressResolver::UpdateSnoopedCacheEntry(const Ip6::Address &aEid,
                                               Mac::ShortAddress   aDest)
 {
     uint16_t          numNonEvictable = 0;
-    CacheEntry *      entry;
+    CacheEntry       *entry;
     Mac::ShortAddress macAddress;
 
     VerifyOrExit(Get<Mle::MleRouter>().IsFullThreadDevice());
@@ -470,8 +464,8 @@ Mac::ShortAddress AddressResolver::LookUp(const Ip6::Address &aEid)
 Error AddressResolver::Resolve(const Ip6::Address &aEid, Mac::ShortAddress &aRloc16, bool aAllowAddressQuery)
 {
     Error           error = kErrorNone;
-    CacheEntry *    entry;
-    CacheEntry *    prev = nullptr;
+    CacheEntry     *entry;
+    CacheEntry     *prev = nullptr;
     CacheEntryList *list;
 
 #if OPENTHREAD_CONFIG_TMF_ALLOW_ADDRESS_RESOLUTION_USING_NET_DATA_SERVICES
@@ -594,7 +588,7 @@ exit:
 Error AddressResolver::SendAddressQuery(const Ip6::Address &aEid)
 {
     Error            error;
-    Coap::Message *  message;
+    Coap::Message   *message;
     Tmf::MessageInfo messageInfo(GetInstance());
 
     message = Get<Tmf::Agent>().NewPriorityNonConfirmablePostMessage(kUriAddressQuery);
@@ -634,9 +628,9 @@ void AddressResolver::HandleTmf<kUriAddressNotify>(Coap::Message &aMessage, cons
     Ip6::InterfaceIdentifier meshLocalIid;
     uint16_t                 rloc16;
     uint32_t                 lastTransactionTime;
-    CacheEntryList *         list;
-    CacheEntry *             entry;
-    CacheEntry *             prev;
+    CacheEntryList          *list;
+    CacheEntry              *entry;
+    CacheEntry              *prev;
 
     VerifyOrExit(aMessage.IsConfirmablePostRequest());
 
@@ -696,12 +690,12 @@ exit:
     return;
 }
 
-void AddressResolver::SendAddressError(const Ip6::Address &            aTarget,
+void AddressResolver::SendAddressError(const Ip6::Address             &aTarget,
                                        const Ip6::InterfaceIdentifier &aMeshLocalIid,
-                                       const Ip6::Address *            aDestination)
+                                       const Ip6::Address             *aDestination)
 {
     Error            error;
-    Coap::Message *  message;
+    Coap::Message   *message;
     Tmf::MessageInfo messageInfo(GetInstance());
 
     VerifyOrExit((message = Get<Tmf::Agent>().NewMessage()) != nullptr, error = kErrorNoBufs);
@@ -868,13 +862,13 @@ exit:
     return;
 }
 
-void AddressResolver::SendAddressQueryResponse(const Ip6::Address &            aTarget,
+void AddressResolver::SendAddressQueryResponse(const Ip6::Address             &aTarget,
                                                const Ip6::InterfaceIdentifier &aMeshLocalIid,
-                                               const uint32_t *                aLastTransactionTime,
-                                               const Ip6::Address &            aDestination)
+                                               const uint32_t                 *aLastTransactionTime,
+                                               const Ip6::Address             &aDestination)
 {
     Error            error;
-    Coap::Message *  message;
+    Coap::Message   *message;
     Tmf::MessageInfo messageInfo(GetInstance());
 
     message = Get<Tmf::Agent>().NewPriorityConfirmablePostMessage(kUriAddressNotify);
@@ -982,8 +976,8 @@ void AddressResolver::HandleTimeTick(void)
     }
 }
 
-void AddressResolver::HandleIcmpReceive(void *               aContext,
-                                        otMessage *          aMessage,
+void AddressResolver::HandleIcmpReceive(void                *aContext,
+                                        otMessage           *aMessage,
                                         const otMessageInfo *aMessageInfo,
                                         const otIcmp6Header *aIcmpHeader)
 {
@@ -993,8 +987,8 @@ void AddressResolver::HandleIcmpReceive(void *               aContext,
                                                                 AsCoreType(aIcmpHeader));
 }
 
-void AddressResolver::HandleIcmpReceive(Message &                aMessage,
-                                        const Ip6::MessageInfo & aMessageInfo,
+void AddressResolver::HandleIcmpReceive(Message                 &aMessage,
+                                        const Ip6::MessageInfo  &aMessageInfo,
                                         const Ip6::Icmp::Header &aIcmpHeader)
 {
     OT_UNUSED_VARIABLE(aMessageInfo);
@@ -1018,7 +1012,7 @@ exit:
 void AddressResolver::LogCacheEntryChange(EntryChange       aChange,
                                           Reason            aReason,
                                           const CacheEntry &aEntry,
-                                          CacheEntryList *  aList)
+                                          CacheEntryList   *aList)
 {
     static const char *const kChangeStrings[] = {
         "added",   // (0) kEntryAdded
@@ -1069,9 +1063,7 @@ exit:
 
 #else // #if OT_SHOULD_LOG_AT(OT_LOG_LEVEL_INFO)
 
-void AddressResolver::LogCacheEntryChange(EntryChange, Reason, const CacheEntry &, CacheEntryList *)
-{
-}
+void AddressResolver::LogCacheEntryChange(EntryChange, Reason, const CacheEntry &, CacheEntryList *) {}
 
 #endif // #if OT_SHOULD_LOG_AT(OT_LOG_LEVEL_NOTE)
 

@@ -41,10 +41,7 @@ namespace Tmf {
 //----------------------------------------------------------------------------------------------------------------------
 // MessageInfo
 
-void MessageInfo::SetSockAddrToRloc(void)
-{
-    SetSockAddr(Get<Mle::MleRouter>().GetMeshLocal16());
-}
+void MessageInfo::SetSockAddrToRloc(void) { SetSockAddr(Get<Mle::MleRouter>().GetMeshLocal16()); }
 
 Error MessageInfo::SetSockAddrToRlocPeerAddrToLeaderAloc(void)
 {
@@ -87,10 +84,7 @@ Agent::Agent(Instance &aInstance)
     SetResourceHandler(&HandleResource);
 }
 
-Error Agent::Start(void)
-{
-    return Coap::Start(kUdpPort, Ip6::kNetifThread);
-}
+Error Agent::Start(void) { return Coap::Start(kUdpPort, Ip6::kNetifThread); }
 
 template <> void Agent::HandleTmf<kUriRelayRx>(Message &aMessage, const Ip6::MessageInfo &aMessageInfo)
 {
@@ -105,9 +99,9 @@ template <> void Agent::HandleTmf<kUriRelayRx>(Message &aMessage, const Ip6::Mes
 #endif
 }
 
-bool Agent::HandleResource(CoapBase &              aCoapBase,
-                           const char *            aUriPath,
-                           Message &               aMessage,
+bool Agent::HandleResource(CoapBase               &aCoapBase,
+                           const char             *aUriPath,
+                           Message                &aMessage,
                            const Ip6::MessageInfo &aMessageInfo)
 {
     return static_cast<Agent &>(aCoapBase).HandleResource(aUriPath, aMessage, aMessageInfo);
@@ -236,9 +230,9 @@ SecureAgent::SecureAgent(Instance &aInstance)
     SetResourceHandler(&HandleResource);
 }
 
-bool SecureAgent::HandleResource(CoapBase &              aCoapBase,
-                                 const char *            aUriPath,
-                                 Message &               aMessage,
+bool SecureAgent::HandleResource(CoapBase               &aCoapBase,
+                                 const char             *aUriPath,
+                                 Message                &aMessage,
                                  const Ip6::MessageInfo &aMessageInfo)
 {
     return static_cast<SecureAgent &>(aCoapBase).HandleResource(aUriPath, aMessage, aMessageInfo);

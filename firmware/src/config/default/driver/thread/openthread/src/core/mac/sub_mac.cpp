@@ -57,8 +57,6 @@ SubMac::SubMac(Instance &aInstance)
     , mRadioCaps(Get<Radio>().GetCaps())
     , mTransmitFrame(Get<Radio>().GetTransmitBuffer())
     , mCallbacks(aInstance)
-    , mPcapCallback(nullptr)
-    , mPcapCallbackContext(nullptr)
     , mTimer(aInstance)
 #if OPENTHREAD_CONFIG_MAC_CSL_RECEIVER_ENABLE
     , mCslTimer(aInstance, SubMac::HandleCslTimer)
@@ -178,12 +176,6 @@ void SubMac::SetExtAddress(const ExtAddress &aExtAddress)
     LogDebg("RadioExtAddress: %s", mExtAddress.ToString().AsCString());
 }
 
-void SubMac::SetPcapCallback(otLinkPcapCallback aPcapCallback, void *aCallbackContext)
-{
-    mPcapCallback        = aPcapCallback;
-    mPcapCallbackContext = aCallbackContext;
-}
-
 Error SubMac::Enable(void)
 {
     Error error = kErrorNone;
@@ -286,9 +278,9 @@ exit:
 
 void SubMac::HandleReceiveDone(RxFrame *aFrame, Error aError)
 {
-    if (mPcapCallback && (aFrame != nullptr) && (aError == kErrorNone))
+    if (mPcapCallback.IsSet() && (aFrame != nullptr) && (aError == kErrorNone))
     {
-        mPcapCallback(aFrame, false, mPcapCallbackContext);
+        mPcapCallback.Invoke(aFrame, false);
     }
 
     if (!ShouldHandleTransmitSecurity() && aFrame != nullptr && aFrame->mInfo.mRxInfo.mAckedWithSecEnhAck)
@@ -507,9 +499,9 @@ void SubMac::BeginTransmit(void)
 
     SetState(kStateTransmit);
 
-    if (mPcapCallback)
+    if (mPcapCallback.IsSet())
     {
-        mPcapCallback(&mTransmitFrame, true, mPcapCallbackContext);
+        mPcapCallback.Invoke(&mTransmitFrame, true);
     }
 
     error = Get<Radio>().Transmit(mTransmitFrame);
@@ -683,10 +675,7 @@ int8_t SubMac::GetRssi(void) const
     return rssi;
 }
 
-int8_t SubMac::GetNoiseFloor(void) const
-{
-    return Get<Radio>().GetReceiveSensitivity();
-}
+int8_t SubMac::GetNoiseFloor(void) const { return Get<Radio>().GetReceiveSensitivity(); }
 
 Error SubMac::EnergyScan(uint8_t aScanChannel, uint16_t aScanDuration)
 {
@@ -1073,10 +1062,7 @@ exit:
     return retval;
 }
 
-void SubMac::HandleCslTimer(Timer &aTimer)
-{
-    aTimer.Get<SubMac>().HandleCslTimer();
-}
+void SubMac::HandleCslTimer(Timer &aTimer) { aTimer.Get<SubMac>().HandleCslTimer(); }
 
 void SubMac::HandleCslTimer(void)
 {

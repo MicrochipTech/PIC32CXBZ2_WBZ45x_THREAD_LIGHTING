@@ -202,10 +202,7 @@ void KeyManager::Start(void)
     StartKeyRotationTimer();
 }
 
-void KeyManager::Stop(void)
-{
-    mKeyRotationTimer.Stop();
-}
+void KeyManager::Stop(void) { mKeyRotationTimer.Stop(); }
 
 void KeyManager::SetPskc(const Pskc &aPskc)
 {
@@ -241,7 +238,7 @@ void KeyManager::ResetFrameCounters(void)
 
 #if OPENTHREAD_FTD
     // reset router frame counters
-    for (Router &router : Get<RouterTable>().Iterate())
+    for (Router &router : Get<RouterTable>())
     {
         router.SetKeySequence(0);
         router.GetLinkFrameCounters().Reset();
@@ -444,9 +441,7 @@ exit:
     return;
 }
 #else
-void KeyManager::MacFrameCounterUsed(uint32_t)
-{
-}
+void KeyManager::MacFrameCounterUsed(uint32_t) {}
 #endif
 
 #if OPENTHREAD_CONFIG_RADIO_LINK_TREL_ENABLE

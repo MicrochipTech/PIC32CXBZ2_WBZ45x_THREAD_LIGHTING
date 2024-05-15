@@ -53,12 +53,6 @@ RegisterLogModule("LinkMetrics");
 
 LinkMetrics::LinkMetrics(Instance &aInstance)
     : InstanceLocator(aInstance)
-    , mReportCallback(nullptr)
-    , mReportCallbackContext(nullptr)
-    , mMgmtResponseCallback(nullptr)
-    , mMgmtResponseCallbackContext(nullptr)
-    , mEnhAckProbingIeReportCallback(nullptr)
-    , mEnhAckProbingIeReportCallbackContext(nullptr)
 {
 }
 
@@ -94,11 +88,11 @@ exit:
 #if OPENTHREAD_CONFIG_MLE_LINK_METRICS_INITIATOR_ENABLE
 Error LinkMetrics::SendMgmtRequestForwardTrackingSeries(const Ip6::Address &aDestination,
                                                         uint8_t             aSeriesId,
-                                                        const SeriesFlags & aSeriesFlags,
-                                                        const Metrics *     aMetrics)
+                                                        const SeriesFlags  &aSeriesFlags,
+                                                        const Metrics      *aMetrics)
 {
     Error               error;
-    Neighbor *          neighbor;
+    Neighbor           *neighbor;
     uint8_t             typeIdCount = 0;
     FwdProbingRegSubTlv fwdProbingSubTlv;
 
@@ -126,10 +120,10 @@ exit:
 
 Error LinkMetrics::SendMgmtRequestEnhAckProbing(const Ip6::Address &aDestination,
                                                 const EnhAckFlags   aEnhAckFlags,
-                                                const Metrics *     aMetrics)
+                                                const Metrics      *aMetrics)
 {
     Error              error;
-    Neighbor *         neighbor;
+    Neighbor          *neighbor;
     uint8_t            typeIdCount = 0;
     EnhAckConfigSubTlv enhAckConfigSubTlv;
 
@@ -362,7 +356,7 @@ Error LinkMetrics::HandleManagementResponse(const Message &aMessage, const Ip6::
     uint8_t  status;
     bool     hasStatus = false;
 
-    VerifyOrExit(mMgmtResponseCallback != nullptr);
+    VerifyOrExit(mMgmtResponseCallback.IsSet());
 
     SuccessOrExit(error = Tlv::FindTlvValueOffset(aMessage, Mle::Tlv::Type::kLinkMetricsManagement, offset, length));
     endOffset = offset + length;
@@ -390,13 +384,13 @@ Error LinkMetrics::HandleManagementResponse(const Message &aMessage, const Ip6::
 
     VerifyOrExit(hasStatus, error = kErrorParse);
 
-    mMgmtResponseCallback(&aAddress, status, mMgmtResponseCallbackContext);
+    mMgmtResponseCallback.Invoke(&aAddress, status);
 
 exit:
     return error;
 }
 
-void LinkMetrics::HandleReport(const Message &     aMessage,
+void LinkMetrics::HandleReport(const Message      &aMessage,
                                uint16_t            aOffset,
                                uint16_t            aLength,
                                const Ip6::Address &aAddress)
@@ -414,7 +408,7 @@ void LinkMetrics::HandleReport(const Message &     aMessage,
 
     OT_UNUSED_VARIABLE(error);
 
-    VerifyOrExit(mReportCallback != nullptr);
+    VerifyOrExit(mReportCallback.IsSet());
 
     values.Clear();
 
@@ -494,12 +488,11 @@ void LinkMetrics::HandleReport(const Message &     aMessage,
 
     VerifyOrExit(hasStatus || hasReport);
 
-    mReportCallback(&aAddress, hasStatus ? nullptr : &values, hasStatus ? static_cast<Status>(status) : kStatusSuccess,
-                    mReportCallbackContext);
+    mReportCallback.Invoke(&aAddress, hasStatus ? nullptr : &values,
+                           hasStatus ? static_cast<Status>(status) : kStatusSuccess);
 
 exit:
     LogDebg("HandleReport, error:%s", ErrorToString(error));
-    return;
 }
 
 Error LinkMetrics::HandleLinkProbe(const Message &aMessage, uint8_t &aSeriesId)
@@ -516,30 +509,12 @@ exit:
     return error;
 }
 
-void LinkMetrics::SetReportCallback(ReportCallback aCallback, void *aContext)
-{
-    mReportCallback        = aCallback;
-    mReportCallbackContext = aContext;
-}
-
-void LinkMetrics::SetMgmtResponseCallback(MgmtResponseCallback aCallback, void *aContext)
-{
-    mMgmtResponseCallback        = aCallback;
-    mMgmtResponseCallbackContext = aContext;
-}
-
-void LinkMetrics::SetEnhAckProbingCallback(EnhAckProbingIeReportCallback aCallback, void *aContext)
-{
-    mEnhAckProbingIeReportCallback        = aCallback;
-    mEnhAckProbingIeReportCallbackContext = aContext;
-}
-
 void LinkMetrics::ProcessEnhAckIeData(const uint8_t *aData, uint8_t aLength, const Neighbor &aNeighbor)
 {
     MetricsValues values;
     uint8_t       idx = 0;
 
-    VerifyOrExit(mEnhAckProbingIeReportCallback != nullptr);
+    VerifyOrExit(mEnhAckProbingIeReportCallback.IsSet());
 
     values.SetMetrics(aNeighbor.GetEnhAckProbingMetrics());
 
@@ -556,8 +531,7 @@ void LinkMetrics::ProcessEnhAckIeData(const uint8_t *aData, uint8_t aLength, con
         values.mRssiValue = ScaleRawValueToRssi(aData[idx++]);
     }
 
-    mEnhAckProbingIeReportCallback(aNeighbor.GetRloc16(), &aNeighbor.GetExtAddress(), &values,
-                                   mEnhAckProbingIeReportCallbackContext);
+    mEnhAckProbingIeReportCallback.Invoke(aNeighbor.GetRloc16(), &aNeighbor.GetExtAddress(), &values);
 
 exit:
     return;
@@ -596,7 +570,7 @@ exit:
 Status LinkMetrics::ConfigureForwardTrackingSeries(uint8_t        aSeriesId,
                                                    uint8_t        aSeriesFlagsMask,
                                                    const Metrics &aMetrics,
-                                                   Neighbor &     aNeighbor)
+                                                   Neighbor      &aNeighbor)
 {
     Status status = kStatusSuccess;
 
@@ -687,7 +661,7 @@ exit:
 Error LinkMetrics::ReadTypeIdsFromMessage(const Message &aMessage,
                                           uint16_t       aStartOffset,
                                           uint16_t       aEndOffset,
-                                          Metrics &      aMetrics)
+                                          Metrics       &aMetrics)
 {
     Error error = kErrorNone;
 
