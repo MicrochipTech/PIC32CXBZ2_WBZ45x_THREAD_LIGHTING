@@ -32,7 +32,7 @@ Checkout the <a href="https://microchipsupport.force.com/s/" target="_blank">Tec
 
 This application enables the users to create a Full Thread Device to control on-board RGB LED. Thread RGB Light receives the On/Off and HSV value from the [Thread co-processor device](https://github.com/MicrochipTech/PIC32CXBZ2_WBZ45x_THREAD_co-processor) once it has joined the thread network. On-board RGB LED is set to corresponding the On/Off and HSV values using multiple PWM signals. Also the current status is reported periodically to [Thread co-processor device](https://github.com/MicrochipTech/PIC32CXBZ2_WBZ45x_THREAD_co-processor).
 
-![](Docs/Hardware_setup.png)
+![](Docs/Setup.png)
 
 | Tip | Go through the [overview](https://onlinedocs.microchip.com/oxy/GUID-2DB248AF-C243-496D-9819-969E43CA63BC-en-US-1/GUID-162D7BE7-3A35-4D12-AE09-EE84C6554377.html) for understanding few key Thread protocol concepts |
 | :- | :- |
