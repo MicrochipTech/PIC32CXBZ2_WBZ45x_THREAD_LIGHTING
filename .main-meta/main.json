@@ -1,0 +1,58 @@
+{
+    "metaDataVersion": "1.0.0",
+    "category": "com.microchip.ide.project",
+    "content": {
+        "metaDataVersion": "1.3.0",
+        "name": "com.microchip.mplabx.project.PIC32CXBZ2_WBZ45x_THREAD_LIGHTING",
+        "version": "1.0.0",
+        "displayName": "PIC32CXBZ2_WBZ45x THREAD LIGHTING",
+        "projectName": "PIC32CXBZ2_WBZ45x_THREAD_LIGHTING",
+        "shortDescription": "IoT Made Easy!-RGB Light Application made with WBZ451 Curiosity Board running Thread networking stack.",
+        "ide": {
+            "name": "MPLAB X",
+            "semverRange": ">=6.20"
+        },
+        "compiler": [
+            {
+                "name": "XC32",
+                "semverRange": "^4.3.0"
+            }
+        ],
+        "dfp": {
+            "name": "PIC32CX-BZ_DFP",
+            "semverRange": "^1.2.230"
+        },
+        "configurator": {
+            "name": "MCC",
+            "semverRange": ">=5.5.0"
+        },
+        "device": {
+            "metaDataVersion": "1.0.0",
+            "category": "com.microchip.portal.contentRef",
+            "content": {
+                "metaDataVersion": "1.0.0",
+                "category": "com.microchip.device",
+                "name": " PIC32CX-BZ2",
+                "versionRange": "*"
+            }
+        },
+        "author": "Vinoth Kumar",
+        "peripherals": [
+            "SERCOM"
+        ],
+        "keywords": [
+             "IoT","MPLAB X","XC32","SERCOM","MCC","Wireless","Development Tool","Temperature","Edge Node"
+        ],
+        "additionalData": {
+            "longDescription": {
+                "metaDataVersion": "1.0.0",
+                "category": "com.microchip.portal.fileRef",
+                "content": {
+                    "metaDataVersion": "1.0.0",
+                    "fileName": "./README.md",
+                    "mimeType": "text/markdown"
+                }
+            }
+        }
+    }
+}
