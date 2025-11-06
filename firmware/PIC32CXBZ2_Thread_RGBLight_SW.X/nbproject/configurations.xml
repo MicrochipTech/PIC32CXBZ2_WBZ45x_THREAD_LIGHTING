@@ -1649,7 +1649,7 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>pkob4hybrid</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>4.40</languageToolchainVersion>
+        <languageToolchainVersion>4.60</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <packs>
