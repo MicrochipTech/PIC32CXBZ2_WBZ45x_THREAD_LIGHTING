@@ -214,6 +214,10 @@ void threadNwStart()
         appMsg.msgId = APP_MSG_OT_PRINT_IP_EVT;
         OSAL_QUEUE_Send(&appData.appQueue, &appMsg, 0);
     }
+
+    PibValue_t value;
+    value.pib_value_64bit = 0x03;
+    PHY_PibSet(phyCCAMode,&value);
 }
 
 void threadHandleStateChange(void)
